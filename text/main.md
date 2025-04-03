@@ -4,8 +4,9 @@
 
 Hello everyone!
 
-<!-- In this blog I will describe my approach to improving NTT performance. -->
-In this blog I want to share some of my thoughts on vectorizing NTT.
+<!-- In this blog  -->
+I want to share some of my thoughts and experiments on vectorizing NTT.
+
 I chose NTT over real-valued FFT because of the imprecision of the latter.
 I chose `avx2` because it is the most advanced vector extension supported by the majority of modern online judges (including Codeforces), as of 2024. 
 
@@ -22,7 +23,7 @@ Vertical dotted lines mark sizes of L1, L2 and L3 caches in `u32`s.
 
 ## Step A, *standard* implementation
 
-One of the most common implementations unrolls recursion into three nested for loops with the help of bit-reverse permutation.
+One of the most common implementations unrolls recursion into three nested `for` loops with the help of bit-reverse permutation.
 This is what I consider the baseline.
 
 The core of it looks like this
@@ -86,12 +87,12 @@ The core of it looks like this
 
 Applying bit-reverse permutation is somehow annoying, because
 1) it is not useful work
-2) it is one of the worst memory access patterns (even worse than random)
+2) it is one of the worst memory access patterns (probably even worse than random)
 3) it is hard to speed up and vectorize
 <!-- 4) (looking ahead) the *three nested loops* we will get will be easier to optimize than the *three nested loops* we currently have  -->
 
 <!-- The most straightforward way to do so, is to perform all the calculations, but under assumption that our array is bit-reversed. -->
-The simplest way to get rid of bit-reversal is just not doing it, but taking into account that the array is permuted.
+The simplest way to get rid of bit-reversal is just not doing it. <!-- but taking into account that the array is permuted. -->
 Consider array elements formal variables, permutation doesn't change their values, only their order in the array.
 We will perform the same operations on the same variables, but their positions in the array will be different.
 
@@ -106,7 +107,7 @@ At `k`-th iteration of the outermost loop we do the following:
 2) perform `butterfly_x2` on each pair, where index of `w` is encoded by lower `k` bits 
 of indices in pair.
 
-If we reverse bits in array index, effect of `k`-th iteration will become:
+If we reverse bits in array index, effect of `k`-th iteration becomes:
 
 1) split all indices into pairs, such that two indices in a pair differ only in `(lg - 1 - k)`-th bit
 2) perform `butterfly_x2` on each pair, where index of `w` is encoded by upper `k` bits 
@@ -130,7 +131,7 @@ Let's optimize it a bit.
 Instead of loading twiddle factors like this `w[k][bit_rev[k][i]]`, we will precompute `w[k]` in bit-reversed order and load it like this `w[k][i]`.
 We may also notice, that arrays in `w` are now prefixes of each other, so we need only one array.
 
-I substituted variables for ~~better~~ shorter code, but workflow is still exacty the same.
+I substituted variables for ~~better~~ shorter code, but workflow is still exactly the same.
 
 </details>
 
@@ -171,13 +172,14 @@ I will not mention inverse transform for the next steps, because it will be very
 ## Step A3, optimizing initialization to just $\mathcal{O}(\log n)$
 
 
-Note that new implementation loads value of `w[i]` just $n - 1$ times, compared to $\frac{1}{2} n \log_2 n$ times for standard implementation
+Note that new implementation loads value of `w[i]` just $n - 1$ times, compared to $ \frac{1}{2} n \log_2 n $ times for standard implementation
 (we can swap two innermost loops and get the same $n - 1$ times, but memory access pattern will become awful).
 
 It means that computing value of `w[i]` on fly (with one multiplication), instead of loading it from precomputed array, will not result in terrible performance decrease.
-So to eliminate need for additional array of size $n$, we will use value of `w[i]`, precomputed array of size $\log_2 n$ and one multiplication to compute value of `w[i + 1]`.
+So to eliminate need for an additional array of size $n$, we will use value of `w[i]`, precomputed array of size $\log_2 n$ and one multiplication to compute value of `w[i + 1]`.
 
-But to achieve that we need to know what entries of array `w` are. 
+<!-- But  -->
+To achieve that we need to know what entries of array `w` are. 
 Let $g$ de the primitive root we are using.
 Let $ w_{2^k} = g^{\frac{mod - 1}{2^k}}$.
 Let $F(s)$ denote the set of indices of all nonzero bits in $s$ (counting from $0$).
@@ -210,7 +212,7 @@ if we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by t
 
 
 So far we have relied on compiler generated (for known in compile-time modulo) Barrett reduction.
-To vectorize modular arithmetic we need to know at least how scalar version works, so on this step we will implement manual handling of all modular arithmetic. 
+To vectorize modular arithmetic we need to know <!-- at least -->how scalar version works, so on this step we will implement manual handling of all modular arithmetic. 
 I will use Montgomery reduction, because vectorized version of it performed better than
 vectorized version of any other reduction algorithm I tried (though there aren't many of them).
 
@@ -218,7 +220,37 @@ vectorized version of any other reduction algorithm I tried (though there aren't
 <details>
 <summary> Quick explanation of Montgomery reduction </summary>
 
-Meow.
+<!-- Meow. -->
+Consider modular multiplication:
+
+We have two integers $a, b \in [0, mod)$. We have computed their product $x = a \cdot b$.
+Now we want to bring $x$ back to $[0, mod)$. For some reason we want to it by shifting $x$ 32-bits to the right (like `x >> 32`).
+But by doing so we will discard some information about $x$, more precisely its lower 32 bits.
+But maybe we can transfer all the information to higher bits (leaving 32 lower bits zeroed)?
+Formally we want to find $y$, such that $y \equiv_{mod} x$ and $y \equiv_{2^{32}} 0$.
+Chinese remainder theorem says, that there exists unique $y$, such that $0 \le y < 2^{32} \cdot mod$ (we assume that $mod$ is odd, since usually $mod$ is big prime number).
+One of its proofs gives us explicit formula: $y = x + \left(\left(x \cdot -\text{inv}(mod, 2^{32})\right)  \bmod 2^{32} \right)\cdot mod$.
+
+Then we can safely shift $y$ 32 bits to the right. Let `r = y >> 32` be the result.
+We know that $y < mod^2 + 2^{32} \cdot mod \implies r < mod + \frac{mod^2}{2^{32}}$. If $mod$ is less than $2^{32}$, than $r < 2 \cdot mod$. That means that we need conditional subtraction to reduce $r$ from $[0, 2 \cdot mod)$ to $[0, mod)$. 
+<!-- But if $mod$ is less than $2^{30}$, than $[0, 2 \cdot mod) \times [0, 2 \cdot mod) \subset [0, 4 \cdot mod^2) \subset [0, 2^{32} \cdot mod)$. It means that even for $a, b \in [0, 2 \cdot mod)$ the result will be in the same interval $[0, 2 \cdot mod)$ -->
+
+```cpp
+
+// n_inv = -inv(mod, 2^32) % 2^32
+
+u32 reduce(u64 val) const {
+    return val + u32(val) * n_inv * u64(mod) >> 32;
+}
+
+u32 mul(u32 a, u32 b) const {
+    return reduce(u64(a) * b);
+}
+```
+
+There is a problem: $y$ is not congruent to $x$ modulo $mod$, it is congruent to $x \cdot 2^{-32}$.
+Lets instead of $a, b$ use their representatives in so-called *Montgomery space*: $a \cdot 2^{32}, b \cdot 2^{32}$. Then their *Montgomery product* `reduce(a * b)` will be $a \cdot 2^{32} \cdot a \cdot 2^{32} \cdot 2^{-32} = ab \cdot 2^{32}$ -- representative of $ab$ in *Montgomery space*.
+This will require us to multiply all values by $2^{32}$ before performing computations and multiply by $2^{32}$ after.
 
 </details>
 
@@ -262,7 +294,7 @@ by storing intermediate values in interval $[0, 2 \cdot mod)$ or $[0, 4 \cdot mo
 We may get rid of two layers worth of multiplications,
 by noticing that all values of twiddle factors on topmost layer are ones, 
 so multiplying by then is trivial (not required at all). So is half of twiddle factors on next layer,
-quarter on layer after next, ..., and they add up to $1 + \frac{1}{2} + \frac{1}{4} + ... = 2 - \frac{1}{2^{n}} \approx 2$ layers.
+quarter on layer after next, ..., and they add up to $1 + \frac{1}{2} + \frac{1}{4} + ... = 2 - \frac{1}{n} \approx 2$ layers.
 
 
 Because the code is getting bloated by various optimizations, we will pack the innermost loop of `transform` function to a template parametrized function `transform_aux` to shorten the code.
@@ -270,7 +302,7 @@ Because the code is getting bloated by various optimizations, we will pack the i
 
 
 Now we can use non-constexpr modulus. But there are some peculiarities.
-I don't really know why, but if we don't save struct for Montgomery in a local variable (like this `const Montgomery mt = this->mt;`),
+I don't really know why, but if we don't save struct for Montgomery to a local variable (like this `const Montgomery mt = this->mt;`),
 compiler will generate unnecessary load instructions for Montgomery constants in hot loops.
 
 [code](https://github.com)
@@ -461,7 +493,7 @@ But now it is possible to adjust number of top layers by switching to $\mathcal{
 Here we optimize computation of sum of products 
 by doing $ (\sum\limits_i a_i \cdot b_i)\ \%\ mod$, 
 instead of usual $ \sum\limits_i (a_i \cdot b_i\ \%\ mod)$.
-Instead of reducing every product, we compute sum of products and do a single reduction for that sum.
+Instead of reducing every product, we compute sum of products and perform a single reduction for that sum.
 
 
 For some reason compiler won't generate good enough code for this function without `O3` optimization level, so I enabled it specifically for this part using `__attribute__((optimize("O3")))`.
@@ -485,14 +517,14 @@ Now top and bottom layers are roughly equal (in terms of time per level), if you
 
 
 But switching to $\mathcal{O}(n^2)$ multiplication at bottom layers has downsides. 
-If we need to perform heavy computation with the output of NTT (e.g. 2D convolution),
+If we need to perform heavy computation with the output of NTT,
 we will have to perform operations $\bmod (x^8 - w_i)$ instead of doing them just pointwise.
 <!-- !  ^ this is terrible -->
-<!-- ? but is it ? -->
+<!-- ? is it ? -->
 
 
 
-### Step F, recursive computation order
+## Step F, recursive computation order
 
 
 Now we are going to improve cache optimality even further.
@@ -516,10 +548,17 @@ Let's visualize computational order as a tree, where nodes are recursive calls.
 
 During each recursive call exactly one `aux_transform` is performed, and it is performed on a half of subarray of the parent node.
 Previous order executed `aux_transform` first by depth in the tree, then by order from left to right.
+Now we do it in recursive order.
 
-<!-- Now we can make computation fully recursive without much of an overhead. -->
+<img src="./images/call_tree.svg">
 
+We may notice a pattern: if we ascend from a leaf node using `0` edges only, we will traverse a consecutive segment of recursive calls (these paths are marked with color). 
+So let's iterate over leaf nodes, ascend until we meet a `1` edge, and perform corresponding transforms in nodes of traversed path (we need to perform them from top to bottom).
+Length of the path can be calculated with the help of `tzcnt` instruction -- it is exactly number of trailing zeros in binary representation of leaf index.
+Order of `aux_transform` calls is still consecutive at each layer, so twiddle factors will be updated correctly.
+Leftmost path will be a special case, since all `aux_transform` calls on it will have twiddle factors of one. 
 
+Inverse transform can be made fully recursive similarly, but we ascend by `1` edges, instead of `0` edges.
 
 
 
@@ -546,7 +585,7 @@ Now the plot looks straight, but it actually isn't.
 If you draw a line through unaffected part (or simply put an edge of a paper sheet to your screen), 
 it will become clear that after the second vertical line (L2 cache) angle changes a little,
 and at `n = 2^29` recursive order is three times closer to that line than usual order.
-This is what we should expect, because for recursive order only one third of layers is affected, whilst for usual order all layers are affected.
+This is what we should expect, because for recursive order only one third of layers is affected (for sizes greater than $2^20$), whilst for usual order all layers are affected.
 
 
 
@@ -591,7 +630,7 @@ There might be ways to improve IO optimality even further, but this blog is alre
 
 
 
-### Final result
+## Final result
 
 
 <details>
@@ -619,22 +658,10 @@ We can submit it to [this problem](https://judge.yosupo.jp/problem/convolution_m
 
 Execution time measured by system includes time for reading input data and printing output data.
 And even with custom fast IO, it takes several times more than the work itself.
-So to measure actual work time more accurately, one need to do it by himself and print result to stderr 
+So to measure actual work time more accurately, one needs to do it by himself and print result to stderr 
 (luckily judge shows stderr on every test). 
 
 Our submission uses `?.?ms` for actual computation (of cyclic convolution of size $2^{20}$). 
 Author of [top1 submission](https://judge.yosupo.jp/submission/199421) (as of 17 Aug of 2024) also printed actual computation time to stderr, his submission uses `~6.6ms`.
 And [this](https://judge.yosupo.jp/submission/201990) submission (by the same author) uses just `6.05ms`, though it doesn't have fast IO and runs in more `100ms` in total.
 
-
-
-
-<!-- However, there are some peculiarities, one typically uses not the convolutions itself, 
-but `ntt` and `intt` with pointwise multiplication to compute what he needs more efficiently.
-We have significantly changed the workflow, 
-instead of pointwise multiplication we use `aux_dot_mod` function which is several times slower.
- -->
-
-<!-- 
-We may also want to actually optimize bottom layers of NTT, not just switch to another algorithm.
-But it is subject for another blog. -->
