@@ -94,9 +94,11 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 ## Step A2, getting rid of bit-reversal
 
 Applying bit-reverse permutation is somehow annoying, because
-1) it is not useful work
-2) it is one of the worst memory access patterns (probably even worse than random)
-3) it is hard to speed up and vectorize
+
+1. it is not useful work
+2. it is one of the worst memory access patterns (probably even worse than random)
+3. it is hard to speed up and vectorize
+
 <!-- 4) (looking ahead) the *three nested loops* we will get will be easier to optimize than the *three nested loops* we currently have  -->
 
 <!-- The most straightforward way to do so, is to perform all the calculations, but under assumption that our array is bit-reversed. -->
@@ -111,14 +113,14 @@ We will perform the same operations on the same variables, but their positions i
 
 At `k`-th iteration of the outermost loop we do the following:
 
-1) split all indices into pairs, such that two indices in a pair differ only in `k`-th bit
-2) perform `butterfly_x2` on each pair, where index of `w` is encoded by lower `k` bits 
+1. split all indices into pairs, such that two indices in a pair differ only in `k`-th bit
+2. perform `butterfly_x2` on each pair, where index of `w` is encoded by lower `k` bits 
 of indices in pair.
 
 If we reverse bits in array index, effect of `k`-th iteration becomes:
 
-1) split all indices into pairs, such that two indices in a pair differ only in `(lg - 1 - k)`-th bit
-2) perform `butterfly_x2` on each pair, where index of `w` is encoded by upper `k` bits 
+1. split all indices into pairs, such that two indices in a pair differ only in `(lg - 1 - k)`-th bit
+2. perform `butterfly_x2` on each pair, where index of `w` is encoded by upper `k` bits 
 of indices in pair, but now in reverse order.
 
 It corresponds to the following code:
@@ -197,6 +199,7 @@ Then `w[i]` is equal to $\prod\limits_{k \in F(i)} w_{2^{k + 2}}$.
 It's not hard to see that quotient `w[i + 1] / w[i]` depends only on number of trailing ones in binary representation of `i`.
 We can compute these quotients for every number of trailing ones.
 Then on every iteration of the middle loop we will:
+
 1. compute number of trailing ones in `i` (with the help of `tzcnt` instruction)
 2. multiply previous value of `w` by corresponding array element.
 
@@ -271,10 +274,11 @@ But moving all array entries in and out of space will take too much time.
 
 So we will do something about it. 
 There are four places where we use multiplication:
-1) In `butterfly_x2` function
-2) For scaling result by $\frac{1}{n}$ 
-3) For pointwise multiplication
-4) For precomputing twiddle factors
+
+1. In `butterfly_x2` function
+2. For scaling result by $\frac{1}{n}$ 
+3. For pointwise multiplication
+4. For precomputing twiddle factors
 
 I will call map $\mathbb{F}_{mod} \times \mathbb{F}_{mod} \to \mathbb{F}_{mod} \quad a, b \mapsto ab \cdot 2^{-32}$ Montgomery multiplication.
 I will say that variable $x$ is in Montgomery space, if the actual value stored is $x \cdot 2^{32}$.
@@ -393,8 +397,9 @@ This will result in all load being put on `p0`, while `p1` and `p5` are almost i
 `_mm256_bsrli_epi128` is executed on `p5`, and we redistribute load from `p0` to `p5` by using it instead of 64-bit shift.
 
 Such replacement is possible because 
-1) `_mm256_mul_epi32` discards upper 32-bits of each 64-bit word, so first two usages are fine
-2) Montgomery reduction leaves lower half of 64-bit words zeroed, so third (the last) usage is also fine
+
+1. `_mm256_mul_epi32` discards upper 32-bits of each 64-bit word, so first two usages are fine
+2. Montgomery reduction leaves lower half of 64-bit words zeroed, so third (the last) usage is also fine
 
 
 The latter is also the reason why we can use `or` (or any other bit combining operation) instead of `blend`.
@@ -420,10 +425,11 @@ But for bottom layers things get complicated, we now have to deal with in-regist
 
 Let's implement `butterfly_x2` in a way friendly to vector operations.
 We are performing transform on values `a`,`b` stored in vector `[a, b]`.
-1) Multiply `[a, b]` by vector `[1, w]` pointwise: `-> [a, b * w]`
-2) Create a copy of `[a, b * w]` where `a` and `b * w` are swapped: `-> [b * w, a]` (in-register shuffle is used)
-3) Negate `b * w` in `[a, b * w]` (by negating all and blending): `-> [a, -b * w]`
-4) Add vectors `[a, -b * w]` and `[b * w, a]` pointwise: `-> [a + b * w, a - b * w]`
+
+1. Multiply `[a, b]` by vector `[1, w]` pointwise: `-> [a, b * w]`
+2. Create a copy of `[a, b * w]` where `a` and `b * w` are swapped: `-> [b * w, a]` (in-register shuffle is used)
+3. Negate `b * w` in `[a, b * w]` (by negating all and blending): `-> [a, -b * w]`
+4. Add vectors `[a, -b * w]` and `[b * w, a]` pointwise: `-> [a + b * w, a - b * w]`
 
 We use this approach to simultaneously perform four `butterfly_x2` on 8 consecutive elements.
 
