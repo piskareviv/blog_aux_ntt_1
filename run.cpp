@@ -15,8 +15,8 @@ int32_t main(int argc, char** argv) {
 
     NTT ntt;
 
-    u32* a = (u32*)_mm_malloc(4 << lg, 64);
-    u32* b = (u32*)_mm_malloc(4 << lg, 64);
+    u32* a = (u32*)_mm_malloc(4LL << lg, 64);
+    u32* b = (u32*)_mm_malloc(4LL << lg, 64);
     std::fill(a, a + (1LL << lg), 1);
     std::iota(b, b + (1LL << lg), 0);
 
