@@ -5,13 +5,13 @@ exec(open(path.join("..", "bench.py")).read())
 # not right, but works
 
 
-system(f"g++ run.cpp -O2 -std=c++20 -o run")
+system(f"g++ -I./ ../run.cpp -O2 -std=c++20 -o run")
 bench("run", "data_ntt.txt", range(L, R))
 
-system(f"g++ run.cpp -O2 -std=c++20 -DONLY_BIT_REVERSE -o run")
+system(f"g++ -I./ ../run.cpp -O2 -std=c++20 -DONLY_BIT_REVERSE -o run")
 bench("run", "data_bit_reverse.txt", range(L, R))
 
-system(f"g++ run.cpp -O2 -std=c++20 -DDO_NOTHING -o run")
+system(f"g++ -I./ ../run.cpp -O2 -std=c++20 -DDO_NOTHING -o run")
 bench("run", "data_nothing.txt", range(L, R))
 
 

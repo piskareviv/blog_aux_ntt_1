@@ -17,8 +17,8 @@ int32_t main(int argc, char** argv) {
 
     u32* a = (u32*)_mm_malloc(4 << lg, 64);
     u32* b = (u32*)_mm_malloc(4 << lg, 64);
-    std::fill(a, a + (1 << lg), 1);
-    std::iota(b, b + (1 << lg), 0);
+    std::fill(a, a + (1LL << lg), 1);
+    std::iota(b, b + (1LL << lg), 0);
 
     ntt.convolve_cyclic(lg, a, b);
 
