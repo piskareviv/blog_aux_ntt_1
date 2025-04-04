@@ -29,51 +29,51 @@ This is what I consider the baseline.
 The core of it looks like this
 
 ```cpp
-void transform(int lg, u32* data) {
-    for (int i = 0; i < (1 << lg); i++) {
-        if (bit_rev[lg][i] < i) {
-            std::swap(data[i], data[bit_rev[lg][i]]);
+    void transform(int lg, u32* data) {
+        for (int i = 0; i < (1 << lg); i++) {
+            if (bit_rev[lg][i] < i) {
+                std::swap(data[i], data[bit_rev[lg][i]]);
+            }
         }
-    }
-    for (int k = 0; k < lg; k++) {
-        for (int i = 0; i < (1 << lg); i += (1 << k + 1)) {
-            for (int j = 0; j < (1 << k); j++) {
-                butterfly_x2(data[i + j], data[i + (1 << k) + j], w[k][j]);
+        for (int k = 0; k < lg; k++) {
+            for (int i = 0; i < (1 << lg); i += (1 << k + 1)) {
+                for (int j = 0; j < (1 << k); j++) {
+                    butterfly_x2(data[i + j], data[i + (1 << k) + j], w[k][j]);
+                }
             }
         }
     }
-}
 ```
 
 
-<details> 
-<summary> More code </summary>
+<spoiler summary=" More code ">  
+ 
 
 
 ```cpp
-void butterfly_x2(u32& a, u32& b, u32 w) {
-    u32 a1 = a, b1 = mul(b, w);
-    a = add(a1, b1), b = add(a1, mod - b1);
-}
+    void butterfly_x2(u32& a, u32& b, u32 w) {
+        u32 a1 = a, b1 = mul(b, w);
+        a = add(a1, b1), b = add(a1, mod - b1);
+    }
 ```
 
 ```cpp
-void convolve_cyclic(int lg, u32* a, u32* b) {
-    transform(lg, a);
-    transform(lg, b);
-    for (int i = 0; i < (1 << lg); i++) {
-        a[i] = mul(a[i], b[i]);
+    void convolve_cyclic(int lg, u32* a, u32* b) {
+        transform(lg, a);
+        transform(lg, b);
+        for (int i = 0; i < (1 << lg); i++) {
+            a[i] = mul(a[i], b[i]);
+        }
+        transform(lg, a);
+        std::reverse(a + 1, a + (1 << lg));
+        u32 inv = power(mod + 1 >> 1, lg);
+        for (int i = 0; i < (1 << lg); i++) {
+            a[i] = mul(a[i], inv);
+        }
     }
-    transform(lg, a);
-    std::reverse(a + 1, a + (1 << lg));
-    u32 inv = power(mod + 1 >> 1, lg);
-    for (int i = 0; i < (1 << lg); i++) {
-        a[i] = mul(a[i], inv);
-    }
-}
 
 ```
-</details>
+ </spoiler>
 
 
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/A/ntt.hpp)
@@ -81,13 +81,13 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 
 
 
-<details> 
-<summary> Benchmark plot </summary>
+<spoiler summary=" Benchmark plot ">  
+ 
 
 [Benchmark plot]
 
 
-</details>
+ </spoiler>
 
 
 
@@ -105,8 +105,8 @@ Consider array elements formal variables, permutation doesn't change their value
 We will perform the same operations on the same variables, but their positions in the array will be different.
 
 
-<details> 
-<summary> detailed explanation </summary>
+<spoiler summary=" detailed explanation ">  
+ 
 
 
 At `k`-th iteration of the outermost loop we do the following:
@@ -124,16 +124,16 @@ of indices in pair, but now in reverse order.
 It corresponds to the following code:
 
 ```cpp
-void transform_forward(int lg, u32* data) {
-    for (int k = 0; k < lg; k++) {
-        for (int i = 0; i < (1 << k); i++) {
-            u32 wi = w[k][bit_rev[k][i]];
-            for (int j = 0; j < (1 << lg - 1 - k); j++) {
-                butterfly_x2(data[(i << lg - k) + j], data[(i << lg - k) + (1 << lg - 1 - k) + j], wi);
+    void transform_forward(int lg, u32* data) {
+        for (int k = 0; k < lg; k++) {
+            for (int i = 0; i < (1 << k); i++) {
+                u32 wi = w[k][bit_rev[k][i]];
+                for (int j = 0; j < (1 << lg - 1 - k); j++) {
+                    butterfly_x2(data[(i << lg - k) + j], data[(i << lg - k) + (1 << lg - 1 - k) + j], wi);
+                }
             }
         }
     }
-}
 ```
 
 Let's optimize it a bit.
@@ -142,21 +142,21 @@ We may also notice, that arrays in `w` are now prefixes of each other, so we nee
 
 I substituted variables for ~~better~~ shorter code, but workflow is still exactly the same.
 
-</details>
+ </spoiler>
 
 
 
 ```cpp
-void transform_forward(int lg, u32* data) {
-    for (int k = lg - 1; k >= 0; k--) {
-        for (int i = 0; i < (1 << lg); i += (1 << k + 1)) {
-            u32 wi = w[i >> k + 1];
-            for (int j = 0; j < (1 << k); j++) {
-                butterfly_x2(data[i + j], data[i + (1 << k) + j], wi);
+    void transform_forward(int lg, u32* data) {
+        for (int k = lg - 1; k >= 0; k--) {
+            for (int i = 0; i < (1 << lg); i += (1 << k + 1)) {
+                u32 wi = w[i >> k + 1];
+                for (int j = 0; j < (1 << k); j++) {
+                    butterfly_x2(data[i + j], data[i + (1 << k) + j], wi);
+                }
             }
         }
     }
-}
 ```
 
 
@@ -205,8 +205,7 @@ enough to justify mild performance decrease.
 
 
 
-[code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/A3/ntt.hpp)
-  
+[code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/A3/ntt.hpp) 
 Initialization as is works in $\mathcal{O}(\log^2 n)$, but it is still negligible.
 
 Fun fact:
@@ -227,8 +226,8 @@ I will use Montgomery reduction, because vectorized version of it performed bett
 vectorized version of any other reduction algorithm I tried (though there aren't many of them).
 
 
-<details>
-<summary> Quick explanation of Montgomery reduction </summary>
+<spoiler summary=" Quick explanation of Montgomery reduction "> 
+ 
 
 <!-- Meow. -->
 
@@ -263,7 +262,7 @@ There is a problem: $y$ is not congruent to $x$ modulo $mod$, it is congruent to
 Lets instead of $a, b$ use their representatives in so-called *Montgomery space*: $a \cdot 2^{32}, b \cdot 2^{32}$. Then their *Montgomery product* `reduce(a * b)` will be $a \cdot 2^{32} \cdot a \cdot 2^{32} \cdot 2^{-32} = ab \cdot 2^{32}$ -- representative of $ab$ in *Montgomery space*.
 This will require us to multiply all values by $2^{32}$ before performing computations and multiply by $2^{-32}$ after.
 
-</details>
+ </spoiler>
 
 But Montgomery reduction has a problem. It divides by $2^{32}$ on each reduction.
 There is a well-known solution of this problem called Montgomery space. 
@@ -367,8 +366,8 @@ It uses just 12 instructions, six of which are multiplications,
 with the longest dependency chain having latency of 18 cycles, with 3 multiplications (latency 5) and 3 other instructions (latency 1) on it.
 
 
-<details>
-<summary> Explanation </summary>
+<spoiler summary=" Explanation "> 
+ 
 
 First we split input `u32x8`s into odd and even indices.
 Now we have 64-bit word for each element at our disposal,
@@ -402,7 +401,7 @@ The latter is also the reason why we can use `or` (or any other bit combining op
 
 <!-- Nya. -->
 
-</details>
+ </spoiler>
 
 
 Note: it is also possible to implement `mul_u32x8` with Barrett reduction, but all of my attempts were slower by at least 20-30%.
@@ -482,7 +481,7 @@ If not that, there would be almost no performance improvement (compared to radix
 ## Step E, optimizing bottom layers
 
 Bottom layers are really slow, 3 bottom layers take as much time as 10 top layers (probably because we didn't vectorize them properly).
-(Back in November 2023) I had been wondering how can I make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by `[user;pajenegod]` 
+(Back in November 2023) I had been wondering how can I make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by `pajenegod [add profile link later]` 
 It clearly shows what exactly the code we got at step A2 is computing.
 Moreover, it suggests switching to $\mathcal{O}(n^2)$ multiplication when we are running out of square roots.
 But there may be another reason for switching to $\mathcal{O}(n^2)$ algorithm, it can simply be faster than $\mathcal{O}(n \log n)$ algorithm for small values of $n$.
@@ -496,8 +495,8 @@ we will multiply $A(x) \bmod (x^8 - w_i)$ by $B(x) \bmod (x^8 - w_i)$ modulo $(x
 
 
 
-<details>
-<summary> implementation details </summary>
+<spoiler summary=" implementation details "> 
+ 
 
 It's hard to properly utilize ILP while doing only single multiplication $\bmod (x^8 - w_i)$, so we will do several such multiplications in *parallel* when possible.
 More precisely it means that we will interleave computations involved in two or four such multiplications.
@@ -520,7 +519,7 @@ For some reason compiler won't generate good enough code for this function witho
 // ...
 ``` -->
 
-</details>
+ </spoiler>
 
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/E/ntt.hpp)
 
@@ -582,14 +581,14 @@ Note: I don't really know if `radix8` is an option, there might be issues with i
 and the (counterintuitive) fact that it (and higher radix transforms) might be less IO optimal because of the way cache associativity works.
 
 
-[code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/F/ntt.hpp)
+[code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/E/ntt.hpp)
 
 
-<details>
-<summary> benchmark plot </summary>
+<spoiler summary=" benchmark plot "> 
+ 
 
 
-</details>
+ </spoiler>
 
 Now the plot looks straight, but it actually isn't. 
 If you draw a line through unaffected part (or simply put an edge of a paper sheet to your screen), 
@@ -599,8 +598,8 @@ This is what we should expect, because for recursive order only one third of lay
 
 
 
-<details>
-<summary> further IO efficiency improvements </summary>
+<spoiler summary=" further IO efficiency improvements "> 
+ 
 <!-- https://judge.yosupo.jp/submission/176389 -->
 
 This part is based on my previous experiments, so there is no code for it, but workflow was pretty similar. 
@@ -628,12 +627,10 @@ it isn't the exact code, but it's pretty similar to the one used in benchmark.
 
 Suffix `_x4` means that code is run in parallel on four cores.
 Suffix `_hrd` means that code uses that *`radix64`* transform.
-</details>
+ </spoiler>
 
 
 There might be ways to improve IO optimality even further, but this blog is already too large.
-Some of them may involve permuting array elements to make caching all elements of higher radix transform in `L1` or `L2` possible.
-
 
 </details>
 
@@ -642,22 +639,22 @@ Some of them may involve permuting array elements to make caching all elements o
 ## Final result
 
 
-<details>
-<summary> ratio plot </summary>
+<spoiler summary=" ratio plot "> 
+ 
 
-</details>
+ </spoiler>
 
 Now our convolution is 10 times faster than the original one.
 There are still things to improve, but doing so is rather complicated and won't give much of an improvement.
 
-<details>
-<summary> examples </summary>
+<spoiler summary=" examples "> 
+ 
 
 - precompute `b * n_inv` for Montgomery multiplication if `b` is known in advance, to move one multiplication off longest dependency chain
 - use different `radix4` implementation (factor common divisor of `w1`, `w2` and `w3` and rearrange computation a bit)
 - optimize $\mathcal{O}(n^2)$ algorithm for bottom layers even better
 
-</details>
+ </spoiler>
 
 
 
