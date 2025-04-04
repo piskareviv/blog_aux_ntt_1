@@ -13,7 +13,11 @@ int32_t main(int argc, char** argv) {
     int lg = std::atoi(argv[1]);
     int cnt = std::atoi(argv[2]);
 
+#ifndef NO_MOD
+    NTT ntt(998'244'353);
+#else
     NTT ntt;
+#endif
 
     u32* a = (u32*)_mm_malloc(4LL << lg, 64);
     u32* b = (u32*)_mm_malloc(4LL << lg, 64);
