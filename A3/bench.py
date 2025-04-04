@@ -8,4 +8,5 @@ exec(open(path.join("..", "bench.py")).read())
 system(f"g++ -I./ ../run.cpp -O2 -std=c++20 -o run")
 bench("run", "data_ntt.txt", range(L, R))
 
+system(f"rm run")
 system(f"rm tmp.txt")

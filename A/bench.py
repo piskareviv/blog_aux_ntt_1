@@ -15,4 +15,5 @@ system(f"g++ -I./ ../run.cpp -O2 -std=c++20 -DDO_NOTHING -o run")
 bench("run", "data_nothing.txt", range(L, R))
 
 
+system(f"rm run")
 system(f"rm tmp.txt")

@@ -11,4 +11,5 @@ bench("run", "data_ntt.txt", range(L, R))
 system(f"g++ -I./ ../run.cpp -O3 -std=c++20 -o run")
 bench("run", "data_ntt_O3.txt", range(L, R))
 
+system(f"rm run")
 system(f"rm tmp.txt")

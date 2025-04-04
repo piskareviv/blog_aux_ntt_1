@@ -2,7 +2,7 @@ run () {
     cd $1 && echo $1 
     
     echo testing...
-    if !( g++ test.cpp -o test -std=c++20 -O2 && ./test 2> test.log); then
+    if !( g++ test.cpp -o test -std=c++20 -O2 && ./test 2> test.log && rm ./test ); then
         echo !!!!  tests failed  !!!!
     else
         echo tests passed
