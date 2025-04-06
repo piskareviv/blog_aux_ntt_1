@@ -323,8 +323,8 @@ by noticing that all values of twiddle factors on topmost layer are ones,
 so multiplying by then is trivial (not required at all). So is half of twiddle factors on next layer,
 quarter on layer after next, ..., and they add up to $1 + \frac{1}{2} + \frac{1}{4} + ... = 2 - \frac{2}{n} \approx 2$ layers.
 
-
-Because the code is getting bloated by various optimizations, we will pack the innermost loop of `transform` function to a template parametrized function `transform_aux` to shorten the code.
+ser
+Because the code is getting bloated by various optimizations, I will pack the innermost loop of `transform` function to a template parametrized function `transform_aux` to shorten the code.
 
 
 
@@ -529,7 +529,7 @@ If not that, there would be almost no performance improvement (compared to radix
 ## Step E, optimizing bottom layers
 
 Bottom layers are really slow, 3 bottom layers take as much time as 10 top layers (probably because we didn't vectorize them properly).
-(Back in November 2023) I had been wondering how can I make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by `[user;pajenegod]` 
+(Back in November 2023) I had been wondering how can I make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by `[user:pajenegod]` 
 It clearly shows what exactly the code we got at step A2 is computing.
 Moreover, it suggests switching to $\mathcal{O}(n^2)$ multiplication when we are running out of square roots.
 But there may be another reason for switching to $\mathcal{O}(n^2)$ algorithm, it can simply be faster than $\mathcal{O}(n \log n)$ algorithm for small values of $n$.
