@@ -188,7 +188,7 @@ I will not mention inverse transform for the next steps, because it will be very
 ## Step A3, optimizing initialization to just $\mathcal{O}(\log n)$
 
 
-Note that new implementation loads value of `w[i]` just $n - 1$ times, compared to $ \frac{1}{2} n \log_2 n $ times for standard implementation
+Note that new implementation loads value of `w[i]` just $n - 1$ times, compared to $\frac{1}{2} n \log_2 n$ times for standard implementation
 (we can swap two innermost loops and get the same $n - 1$ times, but memory access pattern will become awful).
 
 It means that computing value of `w[i]` on fly (with one multiplication), instead of loading it from precomputed array, will not result in terrible performance decrease.
