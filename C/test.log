@@ -1,0 +1,79 @@
+testing mod: 3
+
+testing mod: 5
+
+testing mod: 17
+3  0.01022s  OK
+4  0.01491s  OK
+
+testing mod: 233
+3  0.01017s  OK
+
+testing mod: 257
+3  0.01025s  OK
+4  0.01497s  OK
+5  0.02498s  OK
+6  0.02474s  OK
+7  0.02461s  OK
+8  0.02455s  OK
+
+testing mod: 12289
+3  0.01041s  OK
+4  0.01508s  OK
+5  0.02505s  OK
+6  0.02474s  OK
+7  0.02463s  OK
+8  0.02459s  OK
+9  0.02460s  OK
+10 0.02438s  OK
+11 0.02412s  OK
+12 0.02418s  OK
+
+testing mod: 65537
+3  0.01032s  OK
+4  0.01499s  OK
+5  0.02496s  OK
+6  0.02469s  OK
+7  0.02456s  OK
+8  0.02456s  OK
+9  0.02456s  OK
+10 0.02436s  OK
+11 0.02413s  OK
+12 0.02415s  OK
+13 0.02429s  OK
+14 0.02475s  OK
+15 0.02501s  OK
+16 0.01696s  OK
+
+testing mod: 1000000007
+
+testing mod: 1000000009
+3  0.01031s  OK
+
+testing mod: 1000001329
+3  0.01019s  OK
+4  0.01505s  OK
+
+testing mod: 998244353
+3  0.01025s  OK
+4  0.01516s  OK
+5  0.02508s  OK
+6  0.02477s  OK
+7  0.02455s  OK
+8  0.02456s  OK
+9  0.02457s  OK
+10 0.02436s  OK
+11 0.02414s  OK
+12 0.02423s  OK
+13 0.02427s  OK
+14 0.02436s  OK
+15 0.02483s  OK
+16 0.01687s  OK
+17 0.03396s  OK
+18 0.06838s  OK
+19 0.13793s  OK
+20 0.27897s  OK
+21 0.57212s  OK
+22 1.18398s  OK
+23 2.42870s  OK
+
