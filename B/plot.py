@@ -25,7 +25,7 @@ def make_plot(files, out_file, show=False, large_y_ticks=False):
     my_dpi = 200
     plt.figure(figsize=(1920 / my_dpi, 1080 / my_dpi), dpi=my_dpi)
     if large_y_ticks:
-        plt.yticks(np.arange(0, 101, 10))
+        plt.yticks(np.arange(0, 201, 10))
     else:
         plt.yticks(np.arange(0, 21, 1))
 
@@ -60,11 +60,12 @@ make_plot([
     "../A3/data_ntt.txt",
     "../A2/data_ntt.txt",
     "../A/data_ntt.txt",
-    "../A/data_bit_reverse.txt"
+    "../A/data_bit_reverse.txt",
+    "data_ntt_O3.txt",
 ], "plot", large_y_ticks=True)
 
-make_plot([
-    "data_ntt.txt",
-    "data_ntt_O3.txt",
-    "../A/data_bit_reverse.txt"
-], "plot1", large_y_ticks=True)
+# make_plot([
+#     "data_ntt.txt",
+#     "data_ntt_O3.txt",
+#     "../A/data_bit_reverse.txt"
+# ], "plot1", large_y_ticks=True)

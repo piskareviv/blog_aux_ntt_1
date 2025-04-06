@@ -13,15 +13,15 @@ def get_data(file, scale=1.0):
     return x, y * 1e9
 
 
-def plot(file, scale=1.0):
+def plot(file, scale=1.0, **kwargs):
     x, y = get_data(file, scale)
     plt.plot(x, y, label=file)
-    if file == "data_ntt.txt":
-        plt.axline((x[9], y[9]), (x[15], y[15]), color="red")
-    # plt.axline((x[9+1], y[9+1]), (x[15+1], y[15+1]), color="red")
+
+    if file == "data_ntt.txt" and ("draw_line" in kwargs and kwargs["draw_line"]):
+        plt.axline((x[9], y[9]), (x[15], y[15]), color="red", linestyle="--")
 
 
-def make_plot(files, out_file, show=False, large_y_ticks=False):
+def make_plot(files, out_file, show=False, large_y_ticks=False, **kwargs):
     my_dpi = 200
     plt.figure(figsize=(1920 / my_dpi, 1080 / my_dpi), dpi=my_dpi)
     if large_y_ticks:
@@ -38,7 +38,8 @@ def make_plot(files, out_file, show=False, large_y_ticks=False):
     plt.axhline(y=0)
 
     for fl in files:
-        plot(fl)
+        plot(fl, **kwargs)
+
     plt.legend()
     if show:
         plt.show()
@@ -52,11 +53,17 @@ def make_plot(files, out_file, show=False, large_y_ticks=False):
 make_plot([
     "data_ntt.txt",
     "../E/data_ntt.txt",
-    "../A/data_bit_reverse.txt"
-], "plot")
+    # "../A/data_bit_reverse.txt"
+], "plot", draw_line=True)
+
+make_plot([
+    "data_ntt.txt",
+    "../E/data_ntt.txt",
+    # "../A/data_bit_reverse.txt"
+], "plot1", draw_line=False)
 
 make_plot([
     "data_ntt.txt",
     "data_ntt_O3.txt",
     "../A/data_bit_reverse.txt"
-], "plot1")
+], "plot2")

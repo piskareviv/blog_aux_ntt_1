@@ -84,8 +84,7 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 <details> 
 <summary> Benchmark plot </summary>
 
-[Benchmark plot]
-
+<img src="../A/plot.svg">
 
 </details>
 
@@ -175,7 +174,13 @@ I will not mention inverse transform for the next steps, because it will be very
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/A2/ntt.hpp)
 
 
-[Benchmark plot]
+
+<details> 
+<summary> Benchmark plot </summary>
+
+<img src="../A2/plot.svg">
+
+</details>
 
 
 
@@ -217,7 +222,14 @@ if we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by t
 `convolve_cyclic` function will still work correctly. I don't really understand why, didn't give it much thought. 
 
 
-[Benchmark plot]
+
+<details> 
+<summary> Benchmark plot </summary>
+
+<img src="../A3/plot.svg">
+
+</details>
+
 
 
 
@@ -326,10 +338,21 @@ compiler will generate unnecessary load instructions for Montgomery constants in
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/B/ntt.hpp) 
 
 
+
+
+<details> 
+<summary> Benchmark plot </summary>
+
+<img src="../B/plot.svg">
+
 Note: compiler will already vectorize something with `-O3`,
 but manual vectorization will be several times more performant.
 
-[Benchmark plot]
+</details>
+
+
+
+
 
 
 
@@ -452,7 +475,18 @@ The latter is quite important, since amount of twiddle factor recalculation grow
 
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/C/ntt.hpp) 
 
-[Benchmark plot]
+
+
+<details> 
+<summary> Benchmark plot </summary>
+
+<img src="../C/plot.svg">
+
+</details>
+
+
+
+
 
 
 
@@ -481,7 +515,14 @@ If not that, there would be almost no performance improvement (compared to radix
 
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/D/ntt.hpp)
 
-[Benchmark plot]
+
+<details> 
+<summary> Benchmark plot </summary>
+
+<img src="../D/plot.svg">
+
+</details>
+
 
 
  
@@ -530,10 +571,17 @@ For some reason compiler won't generate good enough code for this function witho
 
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/E/ntt.hpp)
 
-[Benchmark plot]
+
+
+<details> 
+<summary> Benchmark plot </summary>
+
+<img src="../E/plot.svg">
 
 
 Now top and bottom layers are roughly equal (in terms of time per level), if you draw a line through part from $7$ to $20$ (before slowdown caused by memory throughput affects performance), it will almost pass through origin.
+
+</details>
 
 
 
@@ -592,16 +640,18 @@ and the (counterintuitive) fact that it (and higher radix transforms) might be l
 
 
 <details>
-<summary> benchmark plot </summary>
+<summary> Benchmark plot </summary>
 
+<img src="../F/plot.svg">
 
-</details>
 
 Now the plot looks straight, but it actually isn't. 
 If you draw a line through unaffected part (or simply put an edge of a paper sheet to your screen), 
 it will become clear that after the second vertical line (L2 cache) angle changes a little,
 and at `n = 2^29` recursive order is three times closer to that line than usual order.
 This is what we should expect, because for recursive order only one third of layers is affected (for sizes greater than $2^{20}$), whilst for usual order all layers are affected.
+
+</details>
 
 
 
@@ -630,7 +680,7 @@ it isn't the exact code, but it's pretty similar to the one used in benchmark.
 <details>
 <summary> benchmark plot </summary>
 
-<img src="./images/plot_x4.svg">
+<img src="./images/plot_x4_2.svg">
 
 Suffix `_x4` means that code is run in parallel on four cores.
 Suffix `_hrd` means that code uses that *`radix64`* transform.

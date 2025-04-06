@@ -57,7 +57,7 @@ def make_plot(files, out_file, show=False, large_y_ticks=False):
 
 make_plot([
     "data_ntt.txt",
-    "data_ntt_st.txt",
+    # "data_ntt_st.txt",
     "../C/data_ntt.txt",
     "../A/data_bit_reverse.txt"
 ], "plot")

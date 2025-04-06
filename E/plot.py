@@ -15,7 +15,12 @@ def get_data(file, scale=1.0):
 
 def plot(file, scale=1.0):
     x, y = get_data(file, scale)
+    if "bit" in file:
+        x = x[:25]
+        y = y[:25]
+
     plt.plot(x, y, label=file)
+
     # if file == "data_ntt.txt":
     #     plt.axline((x[9], y[9]), (x[15], y[15]), color="red")
     # plt.axline((x[9+1], y[9+1]), (x[15+1], y[15+1]), color="red")
@@ -39,6 +44,7 @@ def make_plot(files, out_file, show=False, large_y_ticks=False):
 
     for fl in files:
         plot(fl)
+
     plt.legend()
     if show:
         plt.show()
@@ -58,5 +64,4 @@ make_plot([
 make_plot([
     "data_ntt.txt",
     "data_ntt_O3.txt",
-    "../A/data_bit_reverse.txt"
 ], "plot1")

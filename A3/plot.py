@@ -25,7 +25,7 @@ def make_plot(files, out_file, show=False, large_y_ticks=False):
     my_dpi = 200
     plt.figure(figsize=(1920 / my_dpi, 1080 / my_dpi), dpi=my_dpi)
     if large_y_ticks:
-        plt.yticks(np.arange(0, 101, 10))
+        plt.yticks(np.arange(0, 201, 10))
     else:
         plt.yticks(np.arange(0, 21, 1))
 

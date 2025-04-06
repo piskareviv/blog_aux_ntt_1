@@ -1,1 +1,3 @@
 manim/
+*.zip
+.vscode/
