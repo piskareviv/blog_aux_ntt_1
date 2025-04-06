@@ -701,6 +701,8 @@ Some of them may involve permuting array elements to make caching all elements o
 <details>
 <summary> ratio plot </summary>
 
+<img src="../F/ratio.svg">
+
 </details>
 
 Now our convolution is 10 times faster than the original one.
