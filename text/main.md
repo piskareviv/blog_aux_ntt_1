@@ -321,7 +321,7 @@ by storing intermediate values in interval $[0, 2 \cdot mod)$ or $[0, 4 \cdot mo
 We may get rid of two layers worth of multiplications,
 by noticing that all values of twiddle factors on topmost layer are ones, 
 so multiplying by then is trivial (not required at all). So is half of twiddle factors on next layer,
-quarter on layer after next, ..., and they add up to $1 + \frac{1}{2} + \frac{1}{4} + ... = 2 - \frac{1}{n} \approx 2$ layers.
+quarter on layer after next, ..., and they add up to $1 + \frac{1}{2} + \frac{1}{4} + ... = 2 - \frac{2}{n} \approx 2$ layers.
 
 
 Because the code is getting bloated by various optimizations, we will pack the innermost loop of `transform` function to a template parametrized function `transform_aux` to shorten the code.
