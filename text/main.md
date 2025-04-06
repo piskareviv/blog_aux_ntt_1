@@ -197,7 +197,7 @@ So to eliminate need for an additional array of size $n$, we will use value of `
 <!-- But  -->
 To achieve that we need to know what entries of array `w` are. 
 Let $g$ de the primitive root we are using.
-Let $ w_{2^k} = g^{\frac{mod - 1}{2^k}}$.
+Let $w_{2^k} = g^{\frac{mod - 1}{2^k}}$.
 Let $F(s)$ denote the set of indices of all nonzero bits in $s$ (counting from $0$).
 Then `w[i]` is equal to $\prod\limits_{k \in F(i)} w_{2^{k + 2}}$.
 
