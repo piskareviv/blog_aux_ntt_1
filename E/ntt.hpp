@@ -452,7 +452,7 @@ class NTT {
     void convolve_cyclic(int lg, u32* a, u32* b) const {
         transform_forward(lg, a);
         transform_forward(lg, b);
-        aux_dot_mod(lg, a, b, a);
-        transform_inverse(lg, a);
+        aux_dot_mod<false>(lg, a, b, a);
+        transform_inverse<true>(lg, a, mt.r);
     }
 };

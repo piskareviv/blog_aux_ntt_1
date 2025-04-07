@@ -705,7 +705,7 @@ Some of them may involve permuting array elements to make caching all elements o
 
 </details>
 
-Now our convolution is 10 times faster than the original one.
+Now our convolution is 9-10 times faster than the original one.
 There are still things to improve, but doing so is rather complicated and won't give much of an improvement.
 
 <details>
