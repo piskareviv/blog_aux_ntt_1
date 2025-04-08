@@ -7,9 +7,9 @@ Hello everyone!
 <!-- In this blog  -->
 I want to share some of my thoughts and experiments on vectorizing NTT.
 
-I chose NTT over real-valued FFT because of the imprecision of the latter.
-I chose `avx2` because it is the most advanced vector extension supported by the majority of modern online judges (including Codeforces), as of 2024. 
-
+I prefer NTT to real-valued FFT because of the imprecision of the latter.
+I use `avx2` because it is the most advanced vector extension supported by the majority of modern online judges (including Codeforces), as of 2024. 
+And I have no idea how many bugs and how much UB my code contains, at least it passes improvised tests.
 
 
 ### Benchmark info
@@ -102,7 +102,7 @@ Applying bit-reverse permutation is somehow annoying, because
 
 <!-- The most straightforward way to do so, is to perform all the calculations, but under assumption that our array is bit-reversed. -->
 The simplest way to get rid of bit-reversal is just not doing it. <!-- but taking into account that the array is permuted. -->
-Consider array elements formal variables, permutation doesn't change their values, only their order in the array.
+Consider array elements as formal variables, permutation doesn't change their values, only their order in the array.
 We will perform the same operations on the same variables, but their positions in the array will be different.
 
 
@@ -141,7 +141,7 @@ Let's optimize it a bit.
 Instead of loading twiddle factors like this `w[k][bit_rev[k][i]]`, we will precompute `w[k]` in bit-reversed order and load it like this `w[k][i]`.
 We may also notice, that arrays in `w` are now prefixes of each other, so we need only one array.
 
-I substituted variables for ~~better~~ shorter code, but workflow is still exactly the same.
+I substituted variables for shorter code, but workflow is still exactly the same.
 
 </details>
 
@@ -162,7 +162,7 @@ void transform_forward(int lg, u32* data) {
 
 
 
-With such an approach output order of `transform` function will be bit-reversed. It means nothing for pointwise product, but inverse transform has to be adjusted.
+With such an approach output order of the `transform` function will be bit-reversed. It means nothing for pointwise product, but inverse transform has to be adjusted.
 It is no longer possible to efficiently express inverse transform using forward. <!-- (it is possible with additional bit-reverse, one instead of three, but this is still bad). -->
 But we always can invert any transform, just by inverting every operation performed in reversed order.
 `butterlfy_x2` is just multiplication by invertible `2x2` matrix. 
@@ -188,15 +188,15 @@ I will not mention inverse transform for the next steps, because it will be very
 ## Step A3, optimizing initialization to just $\mathcal{O}(\log n)$
 
 
-Note that new implementation loads value of `w[i]` just $n - 1$ times, compared to $\frac{1}{2} n \log_2 n$ times for standard implementation
+Note that new implementation loads the value of `w[i]` just $n - 1$ times, compared to $\frac{1}{2} n \log_2 n$ times for standard implementation
 (we can swap two innermost loops and get the same $n - 1$ times, but memory access pattern will become awful).
 
 It means that computing value of `w[i]` on fly (with one multiplication), instead of loading it from precomputed array, will not result in terrible performance decrease.
-So to eliminate need for an additional array of size $n$, we will use value of `w[i]`, precomputed array of size $\log_2 n$ and one multiplication to compute value of `w[i + 1]`.
+So to eliminate the need for an additional array of size $n$, we will use the value of `w[i]`, a precomputed array of size $\log_2 n$ and one multiplication to compute the value of `w[i + 1]`.
 
 <!-- But  -->
-To achieve that we need to know what entries of array `w` are. 
-Let $g$ de the primitive root we are using.
+To achieve that, we need to know what the entries of array `w` are. 
+Let $g$ be the primitive root we are using.
 Let $w_{2^k} = g^{\frac{mod - 1}{2^k}}$.
 Let $F(s)$ denote the set of indices of all nonzero bits in $s$ (counting from $0$).
 Then `w[i]` is equal to $\prod\limits_{k \in F(i)} w_{2^{k + 2}}$.
@@ -217,10 +217,16 @@ enough to justify mild performance decrease.
   
 Initialization as is works in $\mathcal{O}(\log^2 n)$, but it is still negligible.
 
-Fun fact:
-if we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by this line `u32 f = mul(a, b);` (set `f` to `ab` instead of `a / b`),
+
+
+
+<details> 
+<summary> Fun fact </summary>
+
+If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by this line `u32 f = mul(a, b);` (set `f` to `ab` instead of `a / b`),
 `convolve_cyclic` function will still work correctly. I don't really understand why, didn't give it much thought. 
 
+</details>
 
 
 <details> 
@@ -250,7 +256,7 @@ vectorized version of any other reduction algorithm I tried (though there aren't
 Consider modular multiplication:
 
 We have two integers $a, b \in [0, mod)$. We have computed their product $x = a \cdot b$.
-Now we want to bring $x$ back to $[0, mod)$. For some reason we want to it by shifting $x$ 32-bits to the right (like `x >> 32`).
+Now we want to bring $x$ back to $[0, mod)$. For some reason we want to do it by shifting $x$ 32-bits to the right (like `x >> 32`).
 But by doing so we will discard some information about $x$, more precisely its lower 32 bits.
 But maybe we can transfer all the information to higher bits (leaving 32 lower bits zeroed)?
 Formally we want to find $y$, such that $y \equiv_{mod} x$ and $y \equiv_{2^{32}} 0$.
@@ -258,7 +264,7 @@ Chinese remainder theorem says, that there exists unique $y$, such that $0 \le y
 One of its proofs gives us explicit formula: $y = x + \left(\left(x \cdot -\text{inv}(mod, 2^{32})\right)  \bmod 2^{32} \right)\cdot mod$.
 
 Then we can safely shift $y$ 32 bits to the right. Let `r = y >> 32` be the result.
-We know that $y < mod^2 + 2^{32} \cdot mod \implies r < mod + \frac{mod^2}{2^{32}}$. If $mod$ is less than $2^{32}$, than $r < 2 \cdot mod$. That means that we need conditional subtraction to reduce $r$ from $[0, 2 \cdot mod)$ to $[0, mod)$. 
+We know that $y < mod^2 + 2^{32} \cdot mod \implies r < mod + \frac{mod^2}{2^{32}}$. If $mod$ is less than $2^{32}$, then $r < 2 \cdot mod$. That means that we need conditional subtraction to reduce $r$ from $[0, 2 \cdot mod)$ to $[0, mod)$. 
 <!-- But if $mod$ is less than $2^{30}$, than $[0, 2 \cdot mod) \times [0, 2 \cdot mod) \subset [0, 4 \cdot mod^2) \subset [0, 2^{32} \cdot mod)$. It means that even for $a, b \in [0, 2 \cdot mod)$ the result will be in the same interval $[0, 2 \cdot mod)$ -->
 
 ```cpp
@@ -281,7 +287,7 @@ This will require us to multiply all values by $2^{32}$ before performing comput
 </details>
 
 But Montgomery reduction has a problem. It divides by $2^{32}$ on each reduction.
-There is a well-known solution of this problem called Montgomery space. 
+There is a well-known solution of this problem called *Montgomery space*. 
 But moving all array entries in and out of space will take too much time.
 
 So we will do something about it. 
@@ -292,19 +298,19 @@ There are four places where we use multiplication:
 3. For pointwise multiplication
 4. For precomputing twiddle factors
 
-I will call map $\mathbb{F}_{mod} \times \mathbb{F}_{mod} \to \mathbb{F}_{mod} \ \ \ \ a, b \mapsto ab \cdot 2^{-32}$ Montgomery multiplication.
-I will say that variable $x$ is in Montgomery space, if the actual value stored is $x \cdot 2^{32}$.
+I will call map $\mathbb{F}_{mod} \times \mathbb{F}_{mod} \to \mathbb{F}_{mod} \ \ \ \ a, b \mapsto ab \cdot 2^{-32}$ *Montgomery multiplication*.
+I will say that variable $x$ is in *Montgomery space*, if the actual value stored is $x \cdot 2^{32}$.
 
-If we multiply usual number and number from Montgomery space we will get usual number.
-We multiply by twiddle factors in `butterfly_x2` only, so we will compute twiddle factors in Montgomery space 
+If we multiply usual number and number from *Montgomery space* we will get usual number.
+We multiply by twiddle factors in `butterfly_x2` only, so we will compute twiddle factors in *Montgomery space* 
 and leave array entries usual numbers. `butterfly_x2` effect won't change.
 This solves problem of twiddle factor precomputation as well.
 
-We can scale the result using Montgomery multiplication, but we need to account for Montgomery reduction factor.
+We can scale the result using *Montgomery multiplication*, but we need to account for Montgomery reduction factor.
 It can be done in $\mathcal{O}(1)$ additional work, just by multiplying scaling constant by some precomputed factor.
 
 Pointwise multiplication is a bit tricky, but we can cheat a little. 
-If we use Montgomery multiplication for pointwise product $a \cdot b$ while keeping $a$ and $b$ usual numbers, the result will be off by a factor of $2^{-32}$.
+If we use *Montgomery multiplication* for pointwise product $a \cdot b$ while keeping $a$ and $b$ usual numbers, the result will be off by a factor of $2^{-32}$.
 But we can cancel that factor during scaling step in $\mathcal{O}(1)$ addition work.
 Though this approach won't work for non-homogeneous polynomials, like $2a - a^2b$ 
 (this particular one is used in computation of inverse power series).
@@ -312,7 +318,7 @@ Though this approach won't work for non-homogeneous polynomials, like $2a - a^2b
 
 ### Arithmetic usage optimization
 
-Modulus are typically `30-bit` wide, and we can abuse that.
+Moduli are typically `30-bit` wide, and we can abuse that.
 For such modulus Montgomery reduction can reduce from $[0, 4 \cdot mod^2) \subset [0, 2^{32} \cdot mod) $ to $[0, 2 \cdot mod)$.
 This allows us to reduce number of `shrink`s,
 by storing intermediate values in interval $[0, 2 \cdot mod)$ or $[0, 4 \cdot mod)$, instead of usual $[0, mod)$.
@@ -320,7 +326,7 @@ by storing intermediate values in interval $[0, 2 \cdot mod)$ or $[0, 4 \cdot mo
 
 We may get rid of two layers worth of multiplications,
 by noticing that all values of twiddle factors on topmost layer are ones, 
-so multiplying by then is trivial (not required at all). So is half of twiddle factors on next layer,
+so multiplying by them is trivial (not required at all). So is half of twiddle factors on next layer,
 quarter on layer after next, ..., and they add up to $1 + \frac{1}{2} + \frac{1}{4} + ... = 2 - \frac{2}{n} \approx 2$ layers.
 
 ser
@@ -400,7 +406,7 @@ with the longest dependency chain having latency of 18 cycles, with 3 multiplica
 First we split input `u32x8`s into odd and even indices.
 Now we have 64-bit word for each element at our disposal,
 and we can perform Montgomery reduction similarly to scalar case, but with now vectorized.
-Then we combine results for odd and even indices into singe `u32x8`.
+Then we combine results for odd and even indices into a singe `u32x8`.
 
 We don't have a variety of multiplication instructions. 
 Only `_mm256_mul_epi32`, `_mm256_mul_epu32` and `_mm256_mullo_epi32` may be somehow suitable 
@@ -414,7 +420,7 @@ more precisely it is better in terms of resource interference (especially on old
 There (typically) are three ports (execution units) for `avx2` instructions `p0`, `p1` and `p5`.
 On older CPUs (vector) multiplication can be executed on `p0` only. 
 Because we have a lot of multiplications, `p0` is under heavy load. 
-And `_mm256_srli_epi64`, like multiplication, also can be executed on `p0` only.
+And `_mm256_srli_epi64`, like multiplication, can also be executed on `p0` only.
 If we used `_mm256_srli_epi64`, we would have 9 out of 12 instructions executed on `p0` (6 multiplications + 3 bit shifts).
 This will result in all load being put on `p0`, while `p1` and `p5` are almost idle.
 `_mm256_bsrli_epi128` is executed on `p5`, and we redistribute load from `p0` to `p5` by using it instead of 64-bit shift.
@@ -494,22 +500,22 @@ The latter is quite important, since amount of twiddle factor recalculation grow
 ## Step D, radix4 butterfly
 
 
-We made computational part of our algorithm 5-10x faster, but IO can't keep up, 
+We made the computational part of our algorithm 5-10x faster, but I/O can't keep up, 
 and our algorithm gets bottlenecked by memory bandwidth for large arrays ($n \ge 2^{20}$), even though memory access pattern is linear.
-Now we are going to milder this slowdown.
+Now we are going to reduce this slowdown.
 
-One of possible solutions is to perform two layers simultaneously (with radix4 butterfly),
+One of the possible solutions is to perform two layers simultaneously (with radix4 butterfly),
 this halves the number of memory scans and reduces speed of scanning twofold
 (since we are now doing two times more computation per byte loaded).
  
 We implement `butterfly_x4` by simply stacking four `butterfly_x2` onto each other.
 
-Since number of top layers may or may not be odd, we need to add one conditional `butterfly_x2` layer, 
+Since the number of top layers may or may not be odd, we need to add one conditional `butterfly_x2` layer.
 I choose the topmost layer, because it is simplest to implement (all twiddle factors are ones).
 
 Another benefit of radix4 butterfly is the ability to (easily) vectorize recalculation of twiddle factors.
 Now each `butterfly_x4` requires three different twiddle factors, so we can pack them to a single `u64x4` and update simultaneously (like we did in bottom layers).
-If not that, there would be almost no performance improvement (compared to radix2) for arrays fitting in L1 or L2 cache (at least on my machine).
+If not for that, there would be almost no performance improvement (compared to radix2) for arrays fitting in L1 or L2 cache (at least on my machine).
 
 
 
@@ -529,7 +535,7 @@ If not that, there would be almost no performance improvement (compared to radix
 ## Step E, optimizing bottom layers
 
 Bottom layers are really slow, 3 bottom layers take as much time as 10 top layers (probably because we didn't vectorize them properly).
-(Back in November 2023) I had been wondering how can I make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by `[user:pajenegod]` 
+(Back in November 2023) I had been wondering how I could make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by `[user:pajenegod]` 
 It clearly shows what exactly the code we got at step A2 is computing.
 Moreover, it suggests switching to $\mathcal{O}(n^2)$ multiplication when we are running out of square roots.
 But there may be another reason for switching to $\mathcal{O}(n^2)$ algorithm, it can simply be faster than $\mathcal{O}(n \log n)$ algorithm for small values of $n$.
@@ -550,7 +556,7 @@ It's hard to properly utilize ILP while doing only single multiplication $\bmod 
 More precisely it means that we will interleave computations involved in two or four such multiplications.
 
 At previous step we switched to `radix4` butterfly, but number of top layers can be odd, so we may need to perform additional `radix2` layer.
-But now it is possible to adjust number of top layers by switching to $\mathcal{O}(n^2)$ algorithm one layer earlier, so we can get rid that `radix2` layer.
+But now it is possible to adjust the number of top layers by switching to $\mathcal{O}(n^2)$ algorithm one layer earlier, so we can get rid of that `radix2` layer.
 
 Here we optimize computation of sum of products 
 by doing $ (\sum_i a_i \cdot b_i)\ \%\ mod$, 
@@ -558,7 +564,7 @@ instead of usual $ \sum_i (a_i \cdot b_i\ \%\ mod)$.
 Instead of reducing every product, we compute sum of products and perform a single reduction for that sum.
 
 
-For some reason compiler won't generate good enough code for this function without `O3` optimization level, so I enabled it specifically for this part using `__attribute__((optimize("O3")))`.
+For some reason the compiler won't generate good enough code for this function without `O3` optimization level, so I enabled it specifically for this part using `__attribute__((optimize("O3")))`.
 
 
 <!-- Scalar version of the code:
@@ -588,8 +594,6 @@ Now top and bottom layers are roughly equal (in terms of time per level), if you
 But switching to $\mathcal{O}(n^2)$ multiplication at bottom layers has downsides. 
 If we need to perform heavy computation with the output of NTT,
 we will have to perform operations $\bmod (x^8 - w_i)$ instead of doing them just pointwise.
-<!-- !  ^ this is terrible -->
-<!-- ? is it ? -->
 
 
 
@@ -597,7 +601,7 @@ we will have to perform operations $\bmod (x^8 - w_i)$ instead of doing them jus
 
 
 Now we are going to improve cache optimality even further.
-After finishing the topmost `radix4` layer we get four independent parts, 
+After finishing the topmost `radix4` layer, we get four independent parts, 
 so we can perform computation for each part recursively. 
 With recursive order only several topmost layers will be affected by memory bandwidth slowdown.
 
@@ -633,7 +637,7 @@ Inverse transform can be made fully recursive similarly, but we ascend by `1` ed
 
 
 Note: I don't really know if `radix8` is an option, there might be issues with it, such as lack of logical registers (`avx2` has only 16), enormous (machine) code size (~220 instructions per butterfly, don't really know if it matters)
-and the (counterintuitive) fact that it (and higher radix transforms) might be less IO optimal because of the way cache associativity works.
+and the (counterintuitive) fact that it (and higher radix transforms) might be less I/O optimal because of the way cache associativity works.
 
 
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/F/ntt.hpp)
@@ -656,7 +660,7 @@ This is what we should expect, because for recursive order only one third of lay
 
 
 <details>
-<summary> further IO efficiency improvements </summary>
+<summary> further I/O efficiency improvements </summary>
 <!-- https://judge.yosupo.jp/submission/176389 -->
 
 This part is based on my previous experiments, so there is no code for it, but workflow was pretty similar. 
@@ -665,7 +669,7 @@ When memory bandwidth is a bottleneck, reduction in it can cause performance to 
 My CPU has 4 cores, what if we run our code on all four cores in parallel?
 
 
-For array that fit in L2 cache it makes no difference whether we run convolution on a single core or four convolution on all four cores simultaneously.
+For arrays that fit in L2 cache it makes no difference whether we run convolution on a single core or four convolution on all four cores simultaneously.
 But for larger array performance of parallel version degrades quickly. 
 At the rightmost point (`n = 2^28`), parallel version is almost two times slower.
 
@@ -687,7 +691,7 @@ Suffix `_hrd` means that code uses that *`radix64`* transform.
 </details>
 
 
-There might be ways to improve IO optimality even further, but this blog is already too large.
+There might be ways to improve I/O optimality even further, but this blog is already too large.
 Some of them may involve permuting array elements to make caching all elements of higher radix transform in `L1` or `L2` possible.
 
 
@@ -721,14 +725,14 @@ There are still things to improve, but doing so is rather complicated and won't 
 
 
 We can submit it to [this problem](https://judge.yosupo.jp/problem/convolution_mod) and get very close to top1 solution.
-(we need to steal fast IO template from top1 submission for fair comparison)
+(we need to steal fast I/O template from top1 submission for fair comparison)
 
-Execution time measured by system includes time for reading input data and printing output data.
-And even with custom fast IO, it takes several times more than the work itself.
-So to measure actual work time more accurately, one needs to do it by himself and print result to stderr 
+Execution time measured by the system includes time for reading input data and printing output data.
+And even with custom fast I/O, it takes several times more than the work itself.
+So, to measure actual work time more accurately, one needs to do it by himself and print result to stderr 
 (luckily judge shows stderr on every test). 
 
 Our submission uses `?.?ms` for actual computation (of cyclic convolution of size $2^{20}$). 
 Author of [top1 submission](https://judge.yosupo.jp/submission/199421) (as of 17 Aug of 2024) also printed actual computation time to stderr, his submission uses `~6.6ms`.
-And [this](https://judge.yosupo.jp/submission/201990) submission (by the same author) uses just `6.05ms`, though it doesn't have fast IO and runs in more `100ms` in total.
+And [this](https://judge.yosupo.jp/submission/201990) submission (by the same author) uses just `6.05ms`, though it doesn't have fast I/O and runs in more `100ms` in total.
 
