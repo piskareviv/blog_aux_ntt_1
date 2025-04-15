@@ -437,6 +437,8 @@ class NTT {
     }
 
    public:
+    // input in [0, 4 * mod)
+    // output in [0, 2 * mod)
     template <bool remove_montgomery_reduction_factor = true>
     void aux_dot_mod(int lg, const u32* a, const u32* b, u32* c) const {
         int L = get_low_lg(lg);

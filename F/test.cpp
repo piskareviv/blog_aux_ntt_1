@@ -55,11 +55,29 @@ int32_t main() {
 
                 ntt.convolve_cyclic(lg, a2, b2);
 
+                {
+                    u32* a3 = (u32*)_mm_malloc(4 << lg, 64);
+                    u32* b3 = (u32*)_mm_malloc(4 << lg, 64);
+
+                    memcpy(a3, a.data(), 4 << lg);
+                    memcpy(b3, b.data(), 4 << lg);
+
+                    ntt.transform_forward(lg, a3);
+                    ntt.transform_forward(lg, b3);
+                    ntt.aux_dot_mod(lg, a3, b3, a3);
+                    ntt.transform_inverse(lg, a3);
+
+                    assert(0 == memcmp(a2, a3, 4 << lg));
+
+                    _mm_free(a3), _mm_free(b3);
+                }
+
                 std::vector<int> all(1 << lg);
                 std::iota(all.begin(), all.end(), 0);
                 std::swap(all.back(), all[std::min<int>(all.size() - 1, 1)]);
                 std::shuffle(all.begin() + std::min<int>(all.size(), 2), all.end(), rnd);
                 all.resize(std::min<int>(30, all.size()));
+
                 for (int i : all) {
                     uint32_t val = 0;
                     for (int j = 0; j < (1 << lg); j++) {

@@ -1,3 +1,28 @@
+<style>
+
+details {
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 0.5em 0.5em 0;
+}
+
+summary {
+  font-weight: bold;
+  margin: -0.5em -0.5em 0;
+  padding: 0.5em;
+}
+
+details[open] {
+  padding: 0.5em;
+}
+
+details[open] summary {
+  border-bottom: 1px solid #aaa;
+  margin-bottom: 0.5em;
+}
+
+
+</style>
 
 # Making NTT convolution 10x faster with avx2
 
@@ -9,16 +34,27 @@ I want to share some of my thoughts and experiments on vectorizing NTT.
 
 I prefer NTT to real-valued FFT because of the imprecision of the latter.
 I use `avx2` because it is the most advanced vector extension supported by the majority of modern online judges (including Codeforces), as of 2024. 
-And I have no idea how many bugs and how much UB my code contains, at least it passes improvised tests.
+And I have no idea how many bugs and how much UB my code contains, at least it passes some kind of tests.
 
 
 ### Benchmark info
 
 All the benchmarks are performed on my `Ubuntu 22` `Intel i5-1135g7` laptop.
 I execute `cpupower frequency-set -d 3.0ghz -u 3.0ghz` before benchmarks to (attempt to) fix CPU frequency for better accuracy. 
-Code is available at [github](https://github.com).
+Code is available at [github](https://github.com/piskareviv/blog_aux_ntt_1).
 You can try running all the benchmarks on your own machine with `run_all.sh` script.
 Vertical dotted lines mark sizes of L1, L2 and L3 caches in `u32`s.
+
+
+## The task
+
+<blockquote>
+
+Given coefficients of two polynomials $A(x), B(x) \in \mathbb{F}_{mod}[x]$, compute coefficients of $C(x) = A(x)B(x)$. Where $mod = 998\,244\,353$ (or other *sufficiently good* number).
+
+</blockquote>
+
+Since it is accomplished by computing $A(x)B(x) \bmod (x^n - 1)$ (where $n$ is big enough power of two), we will focus on computing $A(x)B(x) \bmod (x^n - 1)$ for a given $n$. Such expression is also known as *cyclic convolution*.
 
 
 ## Step A, *standard* implementation
@@ -49,6 +85,7 @@ void transform(int lg, u32* data) {
 <details> 
 <summary> More code </summary>
 
+<blockquote>
 
 ```cpp
 void butterfly_x2(u32& a, u32& b, u32 w) {
@@ -73,18 +110,25 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 }
 
 ```
+
+</blockquote>
+
 </details>
+
 
 
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/A/ntt.hpp)
 
 
 
-
 <details> 
 <summary> Benchmark plot </summary>
 
+<blockquote>
+
 <img src="../A/plot.svg">
+
+</blockquote>
 
 </details>
 
@@ -107,19 +151,20 @@ We will perform the same operations on the same variables, but their positions i
 
 
 <details> 
-<summary> detailed explanation </summary>
+<summary> Detailed explanation </summary>
 
+<blockquote>
 
 At `k`-th iteration of the outermost loop we do the following:
 
-1. split all indices into pairs, such that two indices in a pair differ only in `k`-th bit
-2. perform `butterfly_x2` on each pair, where index of `w` is encoded by lower `k` bits 
+1. Split all indices into pairs, such that two indices in a pair differ only in `k`-th bit
+2. Perform `butterfly_x2` on each pair, where index of `w` is encoded by lower `k` bits 
 of indices in pair.
 
 If we reverse bits in array index, effect of `k`-th iteration becomes:
 
-1. split all indices into pairs, such that two indices in a pair differ only in `(lg - 1 - k)`-th bit
-2. perform `butterfly_x2` on each pair, where index of `w` is encoded by upper `k` bits 
+1. Split all indices into pairs, such that two indices in a pair differ only in `(lg - 1 - k)`-th bit
+2. Perform `butterfly_x2` on each pair, where index of `w` is encoded by upper `k` bits 
 of indices in pair, but now in reverse order.
 
 It corresponds to the following code:
@@ -142,6 +187,8 @@ Instead of loading twiddle factors like this `w[k][bit_rev[k][i]]`, we will prec
 We may also notice, that arrays in `w` are now prefixes of each other, so we need only one array.
 
 I substituted variables for shorter code, but workflow is still exactly the same.
+
+</blockquote>
 
 </details>
 
@@ -178,7 +225,11 @@ I will not mention inverse transform for the next steps, because it will be very
 <details> 
 <summary> Benchmark plot </summary>
 
+<blockquote>
+
 <img src="../A2/plot.svg">
+
+</blockquote>
 
 </details>
 
@@ -223,8 +274,12 @@ Initialization as is works in $\mathcal{O}(\log^2 n)$, but it is still negligibl
 <details> 
 <summary> Fun fact </summary>
 
+<blockquote>
+
 If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by this line `u32 f = mul(a, b);` (set `f` to `ab` instead of `a / b`),
 `convolve_cyclic` function will still work correctly. I don't really understand why, didn't give it much thought. 
+
+</blockquote>
 
 </details>
 
@@ -232,7 +287,11 @@ If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by t
 <details> 
 <summary> Benchmark plot </summary>
 
+<blockquote>
+
 <img src="../A3/plot.svg">
+
+</blockquote>
 
 </details>
 
@@ -243,7 +302,7 @@ If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by t
 
 
 So far we have relied on compiler generated (for known in compile-time modulo) Barrett reduction.
-To vectorize modular arithmetic we need to know <!-- at least -->how scalar version works, so on this step we will implement manual handling of all modular arithmetic. 
+To vectorize modular arithmetic we need to know it works, so on this step we will implement manual handling of all modular arithmetic. 
 I will use Montgomery reduction, because vectorized version of it performed better than
 vectorized version of any other reduction algorithm I tried (though there aren't many of them).
 
@@ -251,16 +310,18 @@ vectorized version of any other reduction algorithm I tried (though there aren't
 <details>
 <summary> Quick explanation of Montgomery reduction </summary>
 
+<blockquote>
+
 <!-- Meow. -->
 
 Consider modular multiplication:
 
-We have two integers $a, b \in [0, mod)$. We have computed their product $x = a \cdot b$.
+We have two integers $a, b \in [0, mod)$. We compute their product $x = a \cdot b$.
 Now we want to bring $x$ back to $[0, mod)$. For some reason we want to do it by shifting $x$ 32-bits to the right (like `x >> 32`).
 But by doing so we will discard some information about $x$, more precisely its lower 32 bits.
 But maybe we can transfer all the information to higher bits (leaving 32 lower bits zeroed)?
 Formally we want to find $y$, such that $y \equiv_{mod} x$ and $y \equiv_{2^{32}} 0$.
-Chinese remainder theorem says, that there exists unique $y$, such that $0 \le y < 2^{32} \cdot mod$ (we assume that $mod$ is odd, since usually $mod$ is big prime number).
+Chinese remainder theorem says, that there exists unique $y$, such that $0 \le y < 2^{32} \cdot mod$ (we assume that $mod$ is odd, since usually $mod$ is a big prime number).
 One of its proofs gives us explicit formula: $y = x + \left(\left(x \cdot -\text{inv}(mod, 2^{32})\right)  \bmod 2^{32} \right)\cdot mod$.
 
 Then we can safely shift $y$ 32 bits to the right. Let `r = y >> 32` be the result.
@@ -280,9 +341,11 @@ u32 mul(u32 a, u32 b) const {
 }
 ```
 
-There is a problem: $y$ is not congruent to $x$ modulo $mod$, it is congruent to $x \cdot 2^{-32}$.
+> **There is a problem**: $r$ is not congruent to $x$ modulo $mod$, it is congruent to $x \cdot 2^{-32}$.
 Lets instead of $a, b$ use their representatives in so-called *Montgomery space*: $a \cdot 2^{32}, b \cdot 2^{32}$. Then their *Montgomery product* `reduce(a * b)` will be $a \cdot 2^{32} \cdot a \cdot 2^{32} \cdot 2^{-32} = ab \cdot 2^{32}$ -- representative of $ab$ in *Montgomery space*.
 This will require us to multiply all values by $2^{32}$ before performing computations and multiply by $2^{-32}$ after.
+
+</blockquote>
 
 </details>
 
@@ -318,18 +381,28 @@ Though this approach won't work for non-homogeneous polynomials, like $2a - a^2b
 
 ### Arithmetic usage optimization
 
+
 Moduli are typically `30-bit` wide, and we can abuse that.
-For such modulus Montgomery reduction can reduce from $[0, 4 \cdot mod^2) \subset [0, 2^{32} \cdot mod) $ to $[0, 2 \cdot mod)$.
-This allows us to reduce number of `shrink`s,
-by storing intermediate values in interval $[0, 2 \cdot mod)$ or $[0, 4 \cdot mod)$, instead of usual $[0, mod)$.
+Instead of always having all numbers in $[0, mod)$, we will allow them to be in $[0, 2 \cdot mod)$ or $[0, 4 \cdot mod)$ and apply `shrink` when necessary (previously we would perform `shrink` immediately after addition/subtraction).
+For `30-bit` moduli Montgomery reduction can reduce from $[0, 4 \cdot mod^2) \subset [0, 2^{32} \cdot mod) $ to $[0, 2 \cdot mod)$.
+This allows us to reduce number of `shrink`s
 (though we should be careful about it, it's very easy to place a bug while counting how many `shrink`s have to be applied)
+
+```cpp
+u32 shrink(u32 val) const {
+    return std::min(val, val - mod);
+}
+```
+
+This particular implementation of `shrink` may not be the most efficient one for scalar case, 
+but I guess it the most efficient one for vector case, since both `u32` subtraction and minimum are natively supported by `avx2` (`_mm256_sub_epi32` and `_mm256_min_epu32` intrinsics).     
 
 We may get rid of two layers worth of multiplications,
 by noticing that all values of twiddle factors on topmost layer are ones, 
 so multiplying by them is trivial (not required at all). So is half of twiddle factors on next layer,
 quarter on layer after next, ..., and they add up to $1 + \frac{1}{2} + \frac{1}{4} + ... = 2 - \frac{2}{n} \approx 2$ layers.
 
-ser
+
 Because the code is getting bloated by various optimizations, I will pack the innermost loop of `transform` function to a template parametrized function `transform_aux` to shorten the code.
 
 
@@ -349,10 +422,14 @@ compiler will generate unnecessary load instructions for Montgomery constants in
 <details> 
 <summary> Benchmark plot </summary>
 
+<blockquote>
+
 <img src="../B/plot.svg">
 
-Note: compiler will already vectorize something with `-O3`,
+> **Note**: compiler will already vectorize something with `-O3`,
 but manual vectorization will be several times more performant.
+
+</blockquote>
 
 </details>
 
@@ -367,13 +444,13 @@ but manual vectorization will be several times more performant.
 
 ### Vectorizing multiplication
 
-Vectorizing multiplication is the most important step, since most of the performance improvement comes directly from it.
-Yet I won't be comprehensive and will just show you the best I could achieve, without explaining how and why.
+Vectorizing multiplication is the most crucial step, since the majority of the performance improvement comes directly from it.
+Yet I won't be comprehensive and will just show the best I could achieve, without explaining how and why.
 I'll probably write a separate article later.
 
 
 `n_inv` and `mod` are `u32x8`s filled with corresponding values from scalar Montgomery. 
-`mul_u32x8` computes pointwise Montgomery product of input vectors.
+`mul_u32x8` computes pointwise *Montgomery product* of input vectors.
  <!-- `reduce` is separated, because we will need it later. -->
 
 ```cpp
@@ -403,9 +480,11 @@ with the longest dependency chain having latency of 18 cycles, with 3 multiplica
 <details>
 <summary> Explanation </summary>
 
+<blockquote>
+
 First we split input `u32x8`s into odd and even indices.
 Now we have 64-bit word for each element at our disposal,
-and we can perform Montgomery reduction similarly to scalar case, but with now vectorized.
+and we can perform Montgomery reduction similarly to scalar case, but now vectorized.
 Then we combine results for odd and even indices into a singe `u32x8`.
 
 We don't have a variety of multiplication instructions. 
@@ -435,11 +514,12 @@ The latter is also the reason why we can use `or` (or any other bit combining op
 
 
 <!-- Nya. -->
+</blockquote>
 
 </details>
 
 
-Note: it is also possible to implement `mul_u32x8` with Barrett reduction, but all of my attempts were slower by at least 20-30%.
+> **Note**: it is also possible to implement `mul_u32x8` with Barrett reduction, but all of my attempts were slower by at least 20-30%.
 It may be reasonable to use Barrett reduction for pointwise product part when Montgomery reduction factor can't be easily removed.
 
 
@@ -474,7 +554,7 @@ For `k = 0` our `u32x8` will look like `[a1, b1, a2, b2, a3, b3, a4, b4]`.
 We won't separate loops iterations for `k = 0, 1, 2`, and will just apply all of them at once to each block of 8 consecutive `u32`s. 
 With approach like this we can easily vectorize recalculation of twiddle factors by packing
 all $1 + 2 + 4 = 7$ of them to a single `u32x8` and updating simultaneously with one `mul_u32x8`.
-The latter is quite important, since amount of twiddle factor recalculation grows exponentially with layer *depth* and by vectoring it at the bottom layers we vectorize about $\approx \frac{1}{2} + \frac{1}{4} + \frac{1}{8} = 87.5\%$ of all recalculations.
+The latter is quite important, since amount of twiddle factor recalculation grows exponentially with layer *depth* and by vectoring it at the bottom layers we vectorize about $\approx \frac{1}{2} + \frac{1}{4} + \frac{1}{8} = 87.5 \% $ of all recalculations.
 
 <!-- Recalculation of twiddle factors is done similarly, but for all $1 + 2 + 4 = 7$ values simultaneously, by packing them to a single `u32x8`. -->
 
@@ -486,7 +566,11 @@ The latter is quite important, since amount of twiddle factor recalculation grow
 <details> 
 <summary> Benchmark plot </summary>
 
+<blockquote>
+
 <img src="../C/plot.svg">
+
+</blockquote>
 
 </details>
 
@@ -525,7 +609,11 @@ If not for that, there would be almost no performance improvement (compared to r
 <details> 
 <summary> Benchmark plot </summary>
 
+<blockquote>
+
 <img src="../D/plot.svg">
+
+</blockquote>
 
 </details>
 
@@ -552,17 +640,19 @@ we will multiply $A(x) \bmod (x^8 - w_i)$ by $B(x) \bmod (x^8 - w_i)$ modulo $(x
 <details>
 <summary> implementation details </summary>
 
+<blockquote>
+
 It's hard to properly utilize ILP while doing only single multiplication $\bmod (x^8 - w_i)$, so we will do several such multiplications in *parallel* when possible.
-More precisely it means that we will interleave computations involved in two or four such multiplications.
+More precisely we will interleave computations involved in two or four such multiplications.
 
 At previous step we switched to `radix4` butterfly, but number of top layers can be odd, so we may need to perform additional `radix2` layer.
 But now it is possible to adjust the number of top layers by switching to $\mathcal{O}(n^2)$ algorithm one layer earlier, so we can get rid of that `radix2` layer.
 
 Here we optimize computation of sum of products 
-by doing $ (\sum_i a_i \cdot b_i)\ \%\ mod$, 
-instead of usual $ \sum_i (a_i \cdot b_i\ \%\ mod)$.
+by doing $ \left(\sum_i a_i \cdot b_i \right) \ \%\ mod $, 
+instead of usual $ \sum_i \left( a_i \cdot b_i\ \%\ mod \right) $.
 Instead of reducing every product, we compute sum of products and perform a single reduction for that sum.
-
+This is important, since modular reduction is several times more costly than usual `32 x 32 -> 64` multiplication.
 
 For some reason the compiler won't generate good enough code for this function without `O3` optimization level, so I enabled it specifically for this part using `__attribute__((optimize("O3")))`.
 
@@ -573,7 +663,10 @@ For some reason the compiler won't generate good enough code for this function w
 // ...
 ``` -->
 
+</blockquote>
+
 </details>
+
 
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/E/ntt.hpp)
 
@@ -582,10 +675,14 @@ For some reason the compiler won't generate good enough code for this function w
 <details> 
 <summary> Benchmark plot </summary>
 
+<blockquote>
+
 <img src="../E/plot.svg">
 
 
 Now top and bottom layers are roughly equal (in terms of time per level), if you draw a line through part from $7$ to $20$ (before slowdown caused by memory throughput affects performance), it will almost pass through origin.
+
+</blockquote>
 
 </details>
 
@@ -621,7 +718,7 @@ Let's visualize computational order as a tree, where nodes are recursive calls.
 
 During each recursive call exactly one `aux_transform` is performed, and it is performed on a half of subarray of the parent node.
 Previous order executed `aux_transform` first by depth in the tree, then by order from left to right.
-Now we do it in recursive order.
+Now we want to do it in recursive order.
 
 <img src="./images/call_tree.svg">
 
@@ -636,7 +733,7 @@ Inverse transform can be made fully recursive similarly, but we ascend by `1` ed
 
 
 
-Note: I don't really know if `radix8` is an option, there might be issues with it, such as lack of logical registers (`avx2` has only 16), enormous (machine) code size (~220 instructions per butterfly, don't really know if it matters)
+> **Note**: I don't really know if `radix8` is an option, there might be issues with it, such as lack of logical registers (`avx2` has only 16), enormous (machine) code size (~220 instructions per butterfly, don't really know if it matters)
 and the (counterintuitive) fact that it (and higher radix transforms) might be less I/O optimal because of the way cache associativity works.
 
 
@@ -645,6 +742,9 @@ and the (counterintuitive) fact that it (and higher radix transforms) might be l
 
 <details>
 <summary> Benchmark plot </summary>
+
+<blockquote>
+
 
 <img src="../F/plot.svg">
 
@@ -655,12 +755,17 @@ it will become clear that after the second vertical line (L2 cache) angle change
 and at `n = 2^29` recursive order is three times closer to that line than usual order.
 This is what we should expect, because for recursive order only one third of layers is affected (for sizes greater than $2^{20}$), whilst for usual order all layers are affected.
 
+</blockquote>
+
 </details>
 
 
 
 <details>
 <summary> further I/O efficiency improvements </summary>
+
+<blockquote>
+
 <!-- https://judge.yosupo.jp/submission/176389 -->
 
 This part is based on my previous experiments, so there is no code for it, but workflow was pretty similar. 
@@ -684,16 +789,23 @@ it isn't the exact code, but it's pretty similar to the one used in benchmark.
 <details>
 <summary> benchmark plot </summary>
 
+<blockquote>
+
+
 <img src="./images/plot_x4_2.svg">
 
 Suffix `_x4` means that code is run in parallel on four cores.
 Suffix `_hrd` means that code uses that *`radix64`* transform.
+
+</blockquote>
+
 </details>
 
 
 There might be ways to improve I/O optimality even further, but this blog is already too large.
-Some of them may involve permuting array elements to make caching all elements of higher radix transform in `L1` or `L2` possible.
+Some of them may involve permuting array elements or inserting *holes* to make caching all elements of higher radix transform in `L1` or `L2` possible.
 
+</blockquote>
 
 </details>
 
@@ -705,7 +817,12 @@ Some of them may involve permuting array elements to make caching all elements o
 <details>
 <summary> ratio plot </summary>
 
+<blockquote>
+
+
 <img src="../F/ratio.svg">
+
+</blockquote>
 
 </details>
 
@@ -713,11 +830,16 @@ Now our convolution is 9-10 times faster than the original one.
 There are still things to improve, but doing so is rather complicated and won't give much of an improvement.
 
 <details>
-<summary> examples </summary>
+<summary> Examples </summary>
 
-- precompute `b * n_inv` for Montgomery multiplication if `b` is known in advance, to move one multiplication off longest dependency chain
-- use different `radix4` implementation (factor common divisor of `w1`, `w2` and `w3` and rearrange computation a bit)
-- optimize $\mathcal{O}(n^2)$ algorithm for bottom layers even better
+<blockquote>
+
+- Precompute `b * n_inv` for Montgomery multiplication if `b` is known in advance, to move one multiplication off longest dependency chain
+- Use different `radix4` implementation (factor common divisor of `w1`, `w2` and `w3` and rearrange computation a bit)
+- Optimize $\mathcal{O}(n^2)$ algorithm for bottom layers even better
+<!-- -  -->
+
+</blockquote>
 
 </details>
 
@@ -728,11 +850,61 @@ We can submit it to [this problem](https://judge.yosupo.jp/problem/convolution_m
 (we need to steal fast I/O template from top1 submission for fair comparison)
 
 Execution time measured by the system includes time for reading input data and printing output data.
-And even with custom fast I/O, it takes several times more than the work itself.
-So, to measure actual work time more accurately, one needs to do it by himself and print result to stderr 
-(luckily judge shows stderr on every test). 
+And even with custom fast I/O, it takes several times more than the convolution itself.
+So, to measure actual computation time more accurately, one needs to do it by himself and print the result to `stderr` 
+(luckily the judge shows `stderr` on every test). 
 
-Our submission uses `?.?ms` for actual computation (of cyclic convolution of size $2^{20}$). 
+Our submission uses `~7.0ms` for actual computation (of cyclic convolution of size $2^{20}$). 
 Author of [top1 submission](https://judge.yosupo.jp/submission/199421) (as of 17 Aug of 2024) also printed actual computation time to stderr, his submission uses `~6.6ms`.
-And [this](https://judge.yosupo.jp/submission/201990) submission (by the same author) uses just `6.05ms`, though it doesn't have fast I/O and runs in more `100ms` in total.
+And [this](https://judge.yosupo.jp/submission/201990) submission (by the same author) uses just `~6.05ms`, though it doesn't have fast I/O and runs in more `100ms` in total.
+
+
+
+### How to use [F](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/F/ntt.hpp)
+
+First you need to construct an instance of class `NTT` like this `NTT(998244353)`,
+`mod` is not required to be a compile-time constant, but `mod` should be prime.
+
+Then there are 4 methods available:
+
+<!-- 
+- `transform_forward(lg, a)` 
+- `transform_inverse(lg, a)`
+- `aux_dot_mod(lg, a, b, c)`
+- `convolve_cyclic(lg, a, b)` 
+ -->
+
+
+- `transform_forward(lg, a)` -- perform forward transform on first `2^lg` elements of `a`
+- `transform_inverse(lg, a)` -- perform inverse transform on first `2^lg` elements of `a`
+- `aux_dot_mod(lg, a, b, c)` -- use this instead of pointwise multiplication. Writes result to `c`, doesn't change `a`, `b`
+- `convolve_cyclic(lg, a, b)` -- performs cyclic convolution of first `2^lg` elements of `a` with first `2^lg` elements of `b`. Writes result to `a`, alters `b`
+
+
+All passed pointers must be `32-byte` aligned, `lg` -- base-two logarithm of `n`, must be at least 3.
+Allocating aligned memory with `_mm_malloc` is quite convenient, don't forget to call `_mm_free` afterwards.
+
+If you need just convolution, use `convolve_cyclic`.
+
+If you need more sophisticated NTT stuff, 
+use `transform_forward` and `transform_inverse` for forward and inverse transform correspondingly,
+and `aux_dot_mod` instead of pointwise multiplication. 
+Multiplying intermediate representation by constant is unchanged, adding two intermediate representation is unchanged (since everything is linear). But adding constant to intermediate representation is a bit complicated. 
+
+Computing $2a - a^2 b$ will look like (assuming `lg` is sufficiently large):
+
+```cpp
+transform_forward(lg, a);
+transform_forward(lg, b);
+
+aux_dot_mod(lg, a, a, c);  // c = a^2
+aux_dot_mod(lg, b, c, c);  // c *= b
+
+// c = 2a - c  (elementwise)
+for (int i = 0; i < (1 << lg); i++) {
+    c[i] = (2 * (a[i] % mod) + (mod - c[i] % mod)) % mod;
+}
+
+transform_inverse(lg, c);
+```
 
