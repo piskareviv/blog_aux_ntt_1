@@ -846,7 +846,7 @@ There are still things to improve, but doing so is rather complicated and won't 
 
 
 
-We can submit it to [this problem](https://judge.yosupo.jp/problem/convolution_mod) and get very close to top1 solution.
+We can submit it to [this problem](https://judge.yosupo.jp/problem/convolution_mod) and get very [close](https://judge.yosupo.jp/submission/279317) to top1 solution.
 (we need to steal fast I/O template from top1 submission for fair comparison)
 
 Execution time measured by the system includes time for reading input data and printing output data.
