@@ -79,6 +79,7 @@ void transform(int lg, u32* data) {
 
 
 <details> 
+
 <summary> More code </summary>
 
 
@@ -232,7 +233,7 @@ I will not mention inverse transform for the next steps, because it will be very
 
 
 
-## Step A3, optimizing initialization to just $\mathcal{O}(\log n)$
+## Step A3, optimizing initialization to just $O(\log n)$
 
 
 Note that new implementation loads the value of `w[i]` just $n - 1$ times, compared to $\frac{1}{2} n \log_2 n$ times for standard implementation
@@ -262,7 +263,7 @@ enough to justify mild performance decrease.
 
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/A3/ntt.hpp)
   
-Initialization as is works in $\mathcal{O}(\log^2 n)$, but it is still negligible.
+Initialization as is works in $O(\log^2 n)$, but it is still negligible.
 
 
 
@@ -366,11 +367,11 @@ and leave array entries usual numbers. `butterfly_x2` effect won't change.
 This solves problem of twiddle factor precomputation as well.
 
 We can scale the result using *Montgomery multiplication*, but we need to account for Montgomery reduction factor.
-It can be done in $\mathcal{O}(1)$ additional work, just by multiplying scaling constant by some precomputed factor.
+It can be done in $O(1)$ additional work, just by multiplying scaling constant by some precomputed factor.
 
 Pointwise multiplication is a bit tricky, but we can cheat a little. 
 If we use *Montgomery multiplication* for pointwise product $a \cdot b$ while keeping $a$ and $b$ usual numbers, the result will be off by a factor of $2^{-32}$.
-But we can cancel that factor during scaling step in $\mathcal{O}(1)$ addition work.
+But we can cancel that factor during scaling step in $O(1)$ addition work.
 Though this approach won't work for non-homogeneous polynomials, like $2a - a^2b$ 
 (this particular one is used in computation of inverse power series).
 
@@ -619,8 +620,8 @@ If not for that, there would be almost no performance improvement (compared to r
 Bottom layers are really slow, 3 bottom layers take as much time as 10 top layers (probably because we didn't vectorize them properly).
 (Back in November 2023) I had been wondering how I could make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by `[user:pajenegod]` 
 It clearly shows what exactly the code we got at step A2 is computing.
-Moreover, it suggests switching to $\mathcal{O}(n^2)$ multiplication when we are running out of square roots.
-But there may be another reason for switching to $\mathcal{O}(n^2)$ algorithm, it can simply be faster than $\mathcal{O}(n \log n)$ algorithm for small values of $n$.
+Moreover, it suggests switching to $O(n^2)$ multiplication when we are running out of square roots.
+But there may be another reason for switching to $O(n^2)$ algorithm, it can simply be faster than $O(n \log n)$ algorithm for small values of $n$.
 And this is exactly the case. 
 
 Before bottom layers, we already have computed $A(x) \bmod (x^8 - w_i)$ and $B(x) \bmod (x^8 - w_i)$ for every $i$ from $0$ to $\frac{n}{8}$.
@@ -640,7 +641,7 @@ It's hard to properly utilize ILP while doing only single multiplication $\bmod 
 More precisely we will interleave computations involved in two or four such multiplications.
 
 At previous step we switched to `radix4` butterfly, but number of top layers can be odd, so we may need to perform additional `radix2` layer.
-But now it is possible to adjust the number of top layers by switching to $\mathcal{O}(n^2)$ algorithm one layer earlier, so we can get rid of that `radix2` layer.
+But now it is possible to adjust the number of top layers by switching to $O(n^2)$ algorithm one layer earlier, so we can get rid of that `radix2` layer.
 
 Here we optimize computation of sum of products 
 by doing $\left( \sum_i a_i \cdot b_i \right) \ \%\ mod$ 
@@ -683,7 +684,7 @@ Now top and bottom layers are roughly equal (in terms of time per level), if you
 
 
 
-But switching to $\mathcal{O}(n^2)$ multiplication at bottom layers has downsides. 
+But switching to $O(n^2)$ multiplication at bottom layers has downsides. 
 If we need to perform heavy computation with the output of NTT,
 we will have to perform operations $\bmod (x^8 - w_i)$ instead of doing them just pointwise.
 
@@ -831,7 +832,7 @@ There are still things to improve, but doing so is rather complicated and won't 
 
 - Precompute `b * n_inv` for Montgomery multiplication if `b` is known in advance, to move one multiplication off longest dependency chain
 - Use different `radix4` implementation (factor common divisor of `w1`, `w2` and `w3` and rearrange computation a bit)
-- Optimize $\mathcal{O}(n^2)$ algorithm for bottom layers even better
+- Optimize $O(n^2)$ algorithm for bottom layers even better
 <!-- -  -->
 
 
