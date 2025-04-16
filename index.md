@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Math Test
+title: Making NTT convolution 10x faster with avx2
 ---
 
 <script type="text/javascript" id="MathJax-script" async
