@@ -219,12 +219,15 @@ It is no longer possible to efficiently express inverse transform using forward.
 But we always can invert any transform, just by inverting every operation performed in reversed order.
 
 `butterlfy_x2` is just multiplication by invertible `2x2` matrix:
+
 $$
-(a, b) \mapsto (a + b \cdot w,\ a - b \cdot w) = (x, y)
-$$ inverse map 
+(a, b) \mapsto \left(a + b \cdot w,\ a - b \cdot w \right) = (x, y)
+$$ 
+
 $$
 (x, y) \mapsto \frac{1}{2} \left(x + y,\ \frac{1}{w}(x + y)\right) = (a, b)
 $$
+
 Operations inside the two innermost loops are independent, so we need to reverse order of the outermost loop only.
 I will not mention inverse transform for the next steps, because it will be very similar to forward.
 
@@ -730,7 +733,7 @@ Now we want to do it in recursive order.
 We may notice a pattern: if we ascend from a leaf node using `0` edges only, we will traverse a consecutive segment of recursive calls (these paths are marked with color). 
 So let's iterate over leaf nodes, ascend until we meet a `1` edge, and perform corresponding transforms in nodes of traversed path (we need to perform them from top to bottom).
 Length of the path can be calculated with the help of `tzcnt` instruction -- it is exactly number of trailing zeros in binary representation of leaf index.
-Order of `aux_transform` calls is still consecutive at each layer, so twiddle factors will be updated correctly.
+Order of `aux_transform` calls is still consecutive on each layer, so twiddle factors will be updated correctly.
 Leftmost path will be a special case, since all `aux_transform` calls on it will have twiddle factors of one. 
 
 Inverse transform can be made fully recursive similarly, but we ascend by `1` edges, instead of `0` edges.
