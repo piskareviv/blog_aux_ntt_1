@@ -79,6 +79,7 @@ void transform(int lg, u32* data) {
 
 
 <spoiler summary=" More code ">  
+
  
 
 
@@ -122,7 +123,7 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 
 
 
-<img src="../A/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/refs/heads/master/A/plot.svg">
 
 
 
@@ -223,7 +224,7 @@ I will not mention inverse transform for the next steps, because it will be very
 
 
 
-<img src="../A2/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/refs/heads/master/A2/plot.svg">
 
 
 
@@ -232,7 +233,7 @@ I will not mention inverse transform for the next steps, because it will be very
 
 
 
-## Step A3, optimizing initialization to just $\mathcal{O}(\log n)$
+## Step A3, optimizing initialization to just $O(\log n)$
 
 
 Note that new implementation loads the value of `w[i]` just $n - 1$ times, compared to $\frac{1}{2} n \log_2 n$ times for standard implementation
@@ -262,7 +263,7 @@ enough to justify mild performance decrease.
 
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/A3/ntt.hpp)
   
-Initialization as is works in $\mathcal{O}(\log^2 n)$, but it is still negligible.
+Initialization as is works in $O(\log^2 n)$, but it is still negligible.
 
 
 
@@ -285,7 +286,7 @@ If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by t
 
 
 
-<img src="../A3/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/refs/heads/master/A3/plot.svg">
 
 
 
@@ -366,11 +367,11 @@ and leave array entries usual numbers. `butterfly_x2` effect won't change.
 This solves problem of twiddle factor precomputation as well.
 
 We can scale the result using *Montgomery multiplication*, but we need to account for Montgomery reduction factor.
-It can be done in $\mathcal{O}(1)$ additional work, just by multiplying scaling constant by some precomputed factor.
+It can be done in $O(1)$ additional work, just by multiplying scaling constant by some precomputed factor.
 
 Pointwise multiplication is a bit tricky, but we can cheat a little. 
 If we use *Montgomery multiplication* for pointwise product $a \cdot b$ while keeping $a$ and $b$ usual numbers, the result will be off by a factor of $2^{-32}$.
-But we can cancel that factor during scaling step in $\mathcal{O}(1)$ addition work.
+But we can cancel that factor during scaling step in $O(1)$ addition work.
 Though this approach won't work for non-homogeneous polynomials, like $2a - a^2b$ 
 (this particular one is used in computation of inverse power series).
 
@@ -420,7 +421,7 @@ compiler will generate unnecessary load instructions for Montgomery constants in
 
 
 
-<img src="../B/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/refs/heads/master/B/plot.svg">
 
 Compiler will already vectorize something with `-O3`,
 but manual vectorization will be several times more performant.
@@ -562,7 +563,7 @@ The latter is quite important, since amount of twiddle factor recalculation grow
 
 
 
-<img src="../C/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/refs/heads/master/C/plot.svg">
 
 
 
@@ -605,7 +606,7 @@ If not for that, there would be almost no performance improvement (compared to r
 
 
 
-<img src="../D/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/refs/heads/master/D/plot.svg">
 
 
 
@@ -619,8 +620,8 @@ If not for that, there would be almost no performance improvement (compared to r
 Bottom layers are really slow, 3 bottom layers take as much time as 10 top layers (probably because we didn't vectorize them properly).
 (Back in November 2023) I had been wondering how I could make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by `[user:pajenegod]` 
 It clearly shows what exactly the code we got at step A2 is computing.
-Moreover, it suggests switching to $\mathcal{O}(n^2)$ multiplication when we are running out of square roots.
-But there may be another reason for switching to $\mathcal{O}(n^2)$ algorithm, it can simply be faster than $\mathcal{O}(n \log n)$ algorithm for small values of $n$.
+Moreover, it suggests switching to $O(n^2)$ multiplication when we are running out of square roots.
+But there may be another reason for switching to $O(n^2)$ algorithm, it can simply be faster than $O(n \log n)$ algorithm for small values of $n$.
 And this is exactly the case. 
 
 Before bottom layers, we already have computed $A(x) \bmod (x^8 - w_i)$ and $B(x) \bmod (x^8 - w_i)$ for every $i$ from $0$ to $\frac{n}{8}$.
@@ -640,7 +641,7 @@ It's hard to properly utilize ILP while doing only single multiplication $\bmod 
 More precisely we will interleave computations involved in two or four such multiplications.
 
 At previous step we switched to `radix4` butterfly, but number of top layers can be odd, so we may need to perform additional `radix2` layer.
-But now it is possible to adjust the number of top layers by switching to $\mathcal{O}(n^2)$ algorithm one layer earlier, so we can get rid of that `radix2` layer.
+But now it is possible to adjust the number of top layers by switching to $O(n^2)$ algorithm one layer earlier, so we can get rid of that `radix2` layer.
 
 Here we optimize computation of sum of products 
 by doing $\left( \sum_i a_i \cdot b_i \right) \ \%\ mod$ 
@@ -671,7 +672,7 @@ For some reason the compiler won't generate good enough code for this function w
 
 
 
-<img src="../E/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/refs/heads/master/E/plot.svg">
 
 
 Now top and bottom layers are roughly equal (in terms of time per level), if you draw a line through part from $7$ to $20$ (before slowdown caused by memory throughput affects performance), it will almost pass through origin.
@@ -683,7 +684,7 @@ Now top and bottom layers are roughly equal (in terms of time per level), if you
 
 
 
-But switching to $\mathcal{O}(n^2)$ multiplication at bottom layers has downsides. 
+But switching to $O(n^2)$ multiplication at bottom layers has downsides. 
 If we need to perform heavy computation with the output of NTT,
 we will have to perform operations $\bmod (x^8 - w_i)$ instead of doing them just pointwise.
 
@@ -715,7 +716,7 @@ During each recursive call exactly one `aux_transform` is performed, and it is p
 Previous order executed `aux_transform` first by depth in the tree, then by order from left to right.
 Now we want to do it in recursive order.
 
-<img src="./images/call_tree.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/refs/heads/master/./images/call_tree.svg">
 
 We may notice a pattern: if we ascend from a leaf node using `0` edges only, we will traverse a consecutive segment of recursive calls (these paths are marked with color). 
 So let's iterate over leaf nodes, ascend until we meet a `1` edge, and perform corresponding transforms in nodes of traversed path (we need to perform them from top to bottom).
@@ -741,7 +742,7 @@ and the (counterintuitive) fact that it (and higher radix transforms) might be l
 
 
 
-<img src="../F/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/refs/heads/master/F/plot.svg">
 
 
 Now the plot looks straight, but it actually isn't. 
@@ -787,7 +788,7 @@ it isn't the exact code, but it's pretty similar to the one used in benchmark.
 
 
 
-<img src="./images/plot_x4_2.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/refs/heads/master/./images/plot_x4_2.svg">
 
 Suffix `_x4` means that code is run in parallel on four cores.
 Suffix `_hrd` means that code uses that *`radix64`* transform.
@@ -815,7 +816,7 @@ Some of them may involve permuting array elements or inserting *holes* to make c
 
 
 
-<img src="../F/ratio.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/refs/heads/master/F/ratio.svg">
 
 
 
@@ -831,7 +832,7 @@ There are still things to improve, but doing so is rather complicated and won't 
 
 - Precompute `b * n_inv` for Montgomery multiplication if `b` is known in advance, to move one multiplication off longest dependency chain
 - Use different `radix4` implementation (factor common divisor of `w1`, `w2` and `w3` and rearrange computation a bit)
-- Optimize $\mathcal{O}(n^2)$ algorithm for bottom layers even better
+- Optimize $O(n^2)$ algorithm for bottom layers even better
 <!-- -  -->
 
 
