@@ -650,9 +650,13 @@ But now it is possible to adjust the number of top layers by switching to $\math
 
 Here we optimize computation of sum of products 
 by doing 
+
 $$ \left(\sum_i a_i \cdot b_i \right) \ \%\ mod $$ 
+
 instead of usual 
+
 $$ \sum_i \left( a_i \cdot b_i\ \%\ mod \right) $$
+
 Instead of reducing every product, we compute sum of products and perform a single reduction for that sum.
 This is important, since modular reduction is several times more costly than usual `32 x 32 -> 64` multiplication.
 
