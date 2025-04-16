@@ -1,4 +1,3 @@
 theme: minima
-markdown: kramdown
-kramdown:
-    math_engine: katex
+title: 
+markdown: GFM
