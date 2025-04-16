@@ -3,4 +3,4 @@ title: Meow
 markdown: kramdown
 kramdown:
   math_engine: mathjax
-  parse_block_html: true
+#   parse_block_html: true

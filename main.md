@@ -78,7 +78,7 @@ void transform(int lg, u32* data) {
 ```
 
 
-<details> 
+<details markdown="1"> 
 
 <summary> More code </summary>
 
@@ -118,7 +118,7 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 
 
 
-<details> 
+<details markdown="1"> 
 <summary> Benchmark plot </summary>
 
 
@@ -147,7 +147,7 @@ Consider array elements as formal variables, permutation doesn't change their va
 We will perform the same operations on the same variables, but their positions in the array will be different.
 
 
-<details> 
+<details markdown="1"> 
 <summary> Detailed explanation </summary>
 
 
@@ -219,7 +219,7 @@ I will not mention inverse transform for the next steps, because it will be very
 
 
 
-<details> 
+<details markdown="1"> 
 <summary> Benchmark plot </summary>
 
 
@@ -268,7 +268,7 @@ Initialization as is works in $O(\log^2 n)$, but it is still negligible.
 
 
 
-<details> 
+<details markdown="1"> 
 <summary> Fun fact </summary>
 
 
@@ -281,7 +281,7 @@ If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by t
 </details>
 
 
-<details> 
+<details markdown="1"> 
 <summary> Benchmark plot </summary>
 
 
@@ -304,7 +304,7 @@ I will use Montgomery reduction, because vectorized version of it performed bett
 vectorized version of any other reduction algorithm I tried (though there aren't many of them).
 
 
-<details>
+<details markdown="1">
 <summary> Quick explanation of Montgomery reduction </summary>
 
 
@@ -416,7 +416,7 @@ compiler will generate unnecessary load instructions for Montgomery constants in
 
 
 
-<details> 
+<details markdown="1"> 
 <summary> Benchmark plot </summary>
 
 
@@ -474,7 +474,7 @@ It uses just 12 instructions, six of which are multiplications,
 with the longest dependency chain having latency of 18 cycles, with 3 multiplications (latency 5) and 3 other instructions (latency 1) on it.
 
 
-<details>
+<details markdown="1">
 <summary> Explanation </summary>
 
 
@@ -558,7 +558,7 @@ The latter is quite important, since amount of twiddle factor recalculation grow
 
 
 
-<details> 
+<details markdown="1"> 
 <summary> Benchmark plot </summary>
 
 
@@ -601,7 +601,7 @@ If not for that, there would be almost no performance improvement (compared to r
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/D/ntt.hpp)
 
 
-<details> 
+<details markdown="1"> 
 <summary> Benchmark plot </summary>
 
 
@@ -632,7 +632,7 @@ we will multiply $A(x) \bmod (x^8 - w_i)$ by $B(x) \bmod (x^8 - w_i)$ modulo $(x
 
 
 
-<details>
+<details markdown="1">
 <summary> implementation details </summary>
 
 
@@ -667,7 +667,7 @@ For some reason the compiler won't generate good enough code for this function w
 
 
 
-<details> 
+<details markdown="1"> 
 <summary> Benchmark plot </summary>
 
 
@@ -736,7 +736,7 @@ and the (counterintuitive) fact that it (and higher radix transforms) might be l
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/F/ntt.hpp)
 
 
-<details>
+<details markdown="1">
 <summary> Benchmark plot </summary>
 
 
@@ -757,7 +757,7 @@ This is what we should expect, because for recursive order only one third of lay
 
 
 
-<details>
+<details markdown="1">
 <summary> further I/O efficiency improvements </summary>
 
 
@@ -782,7 +782,7 @@ Even though L3 is much slower than previous levels of cache and is shared betwee
 Check part from line 891 to line 989 of [this](https://judge.yosupo.jp/submission/176389) submission for implementation details, 
 it isn't the exact code, but it's pretty similar to the one used in benchmark.
 
-<details>
+<details markdown="1">
 <summary> benchmark plot </summary>
 
 
@@ -810,7 +810,7 @@ Some of them may involve permuting array elements or inserting *holes* to make c
 ## Final result
 
 
-<details>
+<details markdown="1">
 <summary> ratio plot </summary>
 
 
@@ -825,7 +825,7 @@ Some of them may involve permuting array elements or inserting *holes* to make c
 Now our convolution is 9-10 times faster than the original one.
 There are still things to improve, but doing so is rather complicated and won't give much of an improvement.
 
-<details>
+<details markdown="1">
 <summary> Examples </summary>
 
 
@@ -888,7 +888,7 @@ Multiplying intermediate representation by constant is unchanged, adding two int
 
 
 Computing $2a - a^2 b$:
-<details>
+<details markdown="1">
 
 <summary> code </summary>
 
