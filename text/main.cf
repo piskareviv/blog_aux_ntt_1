@@ -48,11 +48,7 @@ Vertical dotted lines mark sizes of L1, L2 and L3 caches in `u32`s.
 
 ## The task
 
-
-
-Given coefficients of two polynomials $A(x), B(x) \in \mathbb{F}_{mod}[x]$, compute coefficients of $C(x) = A(x)B(x)$. Where $mod = 998\,244\,353$ (or other *sufficiently good* number).
-
-
+> Given coefficients of two polynomials $A(x), B(x) \in \mathbb{F}_{mod}[x]$, compute coefficients of $C(x) = A(x)B(x)$. Where $mod = 998\,244\,353$ (or other *sufficiently good* number).
 
 Since it is accomplished by computing $A(x)B(x) \bmod (x^n - 1)$ (where $n$ is big enough power of two), we will focus on computing $A(x)B(x) \bmod (x^n - 1)$ for a given $n$. Such expression is also known as *cyclic convolution*.
 
@@ -426,7 +422,7 @@ compiler will generate unnecessary load instructions for Montgomery constants in
 
 <img src="../B/plot.svg">
 
-> **Note**: compiler will already vectorize something with `-O3`,
+Compiler will already vectorize something with `-O3`,
 but manual vectorization will be several times more performant.
 
 
@@ -519,7 +515,7 @@ The latter is also the reason why we can use `or` (or any other bit combining op
  </spoiler>
 
 
-> **Note**: it is also possible to implement `mul_u32x8` with Barrett reduction, but all of my attempts were slower by at least 20-30%.
+**Note**: it is also possible to implement `mul_u32x8` with Barrett reduction, but all of my attempts were slower by at least 20-30%.
 It may be reasonable to use Barrett reduction for pointwise product part when Montgomery reduction factor can't be easily removed.
 
 
@@ -554,9 +550,7 @@ For `k = 0` our `u32x8` will look like `[a1, b1, a2, b2, a3, b3, a4, b4]`.
 We won't separate loops iterations for `k = 0, 1, 2`, and will just apply all of them at once to each block of 8 consecutive `u32`s. 
 With approach like this we can easily vectorize recalculation of twiddle factors by packing
 all $1 + 2 + 4 = 7$ of them to a single `u32x8` and updating simultaneously with one `mul_u32x8`.
-The latter is quite important, since amount of twiddle factor recalculation grows exponentially with layer *depth* and by vectoring it at the bottom layers we vectorize about $\approx \frac{1}{2} + \frac{1}{4} + \frac{1}{8} = 87.5 \% $ of all recalculations.
-
-<!-- Recalculation of twiddle factors is done similarly, but for all $1 + 2 + 4 = 7$ values simultaneously, by packing them to a single `u32x8`. -->
+The latter is quite important, since amount of twiddle factor recalculation grows exponentially with layer *depth* and by vectoring it at the bottom layers we vectorize about $\approx \frac{1}{2} + \frac{1}{4} + \frac{1}{8} = 87.5\%$ of all recalculations.
 
 
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/C/ntt.hpp) 
@@ -649,10 +643,8 @@ At previous step we switched to `radix4` butterfly, but number of top layers can
 But now it is possible to adjust the number of top layers by switching to $\mathcal{O}(n^2)$ algorithm one layer earlier, so we can get rid of that `radix2` layer.
 
 Here we optimize computation of sum of products 
-by doing 
-$$ \left(\sum_i a_i \cdot b_i \right) \ \%\ mod $$ 
-instead of usual 
-$$ \sum_i \left( a_i \cdot b_i\ \%\ mod \right) $$
+by doing $\left( \sum_i a_i \cdot b_i \right) \ \%\ mod$ 
+instead of usual $\sum_i \left( a_i \cdot b_i\ \%\ mod \right)$
 Instead of reducing every product, we compute sum of products and perform a single reduction for that sum.
 This is important, since modular reduction is several times more costly than usual `32 x 32 -> 64` multiplication.
 
@@ -687,6 +679,7 @@ Now top and bottom layers are roughly equal (in terms of time per level), if you
 
 
  </spoiler>
+
 
 
 
@@ -754,7 +747,7 @@ and the (counterintuitive) fact that it (and higher radix transforms) might be l
 Now the plot looks straight, but it actually isn't. 
 If you draw a line through unaffected part (or simply put an edge of a paper sheet to your screen), 
 it will become clear that after the second vertical line (L2 cache) angle changes a little,
-and at `n = 2^29` recursive order is three times closer to that line than usual order.
+and at `n = 2^29` recursive order is two-three times closer to that line than usual order.
 This is what we should expect, because for recursive order only one third of layers is affected (for sizes greater than $2^{20}$), whilst for usual order all layers are affected.
 
 
@@ -778,7 +771,7 @@ My CPU has 4 cores, what if we run our code on all four cores in parallel?
 
 For arrays that fit in L2 cache it makes no difference whether we run convolution on a single core or four convolution on all four cores simultaneously.
 But for larger array performance of parallel version degrades quickly. 
-At the rightmost point (`n = 2^28`), parallel version is almost two times slower.
+At the rightmost point `n = 2^28`, parallel version is almost two times slower.
 
 I tried using `radix64` on blocks of size `1024` (so one such transform acts on $1024 \cdot 64 = 65536$ elements in total) using three layers of `radix4` (we use *`radix64`* only when array doesn't fit in L2 cache).
 It did help, but I don't actually know why.
@@ -857,11 +850,11 @@ So, to measure actual computation time more accurately, one needs to do it by hi
 (luckily the judge shows `stderr` on every test). 
 
 Our submission uses `~7.0ms` for actual computation (of cyclic convolution of size $2^{20}$). 
-Author of [top1 submission](https://judge.yosupo.jp/submission/199421) (as of 17 Aug of 2024) also printed actual computation time to stderr, his submission uses `~6.6ms`.
+Author of [top1 submission](https://judge.yosupo.jp/submission/199421) (as of 17 Aug of 2024) also printed actual computation time to stderr, his submission uses `~6.5ms`.
 And [this](https://judge.yosupo.jp/submission/201990) submission (by the same author) uses just `~6.05ms`, though it doesn't have fast I/O and runs in more `100ms` in total.
 
 
-
+<!-- 
 ### How to use [F](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/F/ntt.hpp)
 
 First you need to construct an instance of class `NTT` like this `NTT(998244353)`,
@@ -869,12 +862,11 @@ First you need to construct an instance of class `NTT` like this `NTT(998244353)
 
 Then there are 4 methods available:
 
-<!-- 
+
 - `transform_forward(lg, a)` 
 - `transform_inverse(lg, a)`
 - `aux_dot_mod(lg, a, b, c)`
 - `convolve_cyclic(lg, a, b)` 
- -->
 
 
 - `transform_forward(lg, a)` -- perform forward transform on first `2^lg` elements of `a`
@@ -893,7 +885,14 @@ use `transform_forward` and `transform_inverse` for forward and inverse transfor
 and `aux_dot_mod` instead of pointwise multiplication. 
 Multiplying intermediate representation by constant is unchanged, adding two intermediate representation is unchanged (since everything is linear). But adding constant to intermediate representation is a bit complicated. 
 
-Computing $2a - a^2 b$ will look like (assuming `lg` is sufficiently large):
+
+Computing $2a - a^2 b$:
+<spoiler summary=" code "> 
+
+ 
+
+
+
 
 ```cpp
 transform_forward(lg, a);
@@ -910,3 +909,9 @@ for (int i = 0; i < (1 << lg); i++) {
 transform_inverse(lg, c);
 ```
 
+
+
+
+ </spoiler> 
+
+-->
