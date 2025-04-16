@@ -221,7 +221,14 @@ void transform_forward(int lg, u32* data) {
 With such an approach output order of the `transform` function will be bit-reversed. It means nothing for pointwise product, but inverse transform has to be adjusted.
 It is no longer possible to efficiently express inverse transform using forward. <!-- (it is possible with additional bit-reverse, one instead of three, but this is still bad). -->
 But we always can invert any transform, just by inverting every operation performed in reversed order.
-`butterlfy_x2` is just multiplication by invertible `2x2` matrix (forward map $(a, b) \mapsto (a + b \cdot w, a - b \cdot w)$, inverse map $ $).
+
+`butterlfy_x2` is just multiplication by invertible `2x2` matrix:
+$$
+(a, b) \mapsto (a + b \cdot w,\ a - b \cdot w) = (x, y)
+$$ inverse map 
+$$
+(x, y) \mapsto \frac{1}{2} \left(x + y,\ \frac{1}{w}(x + y)\right) = (a, b)
+$$
 Operations inside the two innermost loops are independent, so we need to reverse order of the outermost loop only.
 I will not mention inverse transform for the next steps, because it will be very similar to forward.
 
@@ -370,7 +377,7 @@ There are four places where we use multiplication:
 3. For pointwise multiplication
 4. For precomputing twiddle factors
 
-I will call map $ \mathbb{F}_{\text{mod}} \times \mathbb{F}_{\text{mod}} \to \mathbb{F}_{\text{mod}} \quad a, b \mapsto ab \cdot 2^{-32} $ *Montgomery multiplication*.
+I will call map $ \mathbb{F}\_{\text{mod}} \times \mathbb{F}\_{\text{mod}} \to \mathbb{F}\_{\text{mod}} \quad a, b \mapsto ab \cdot 2^{-32} $ *Montgomery multiplication*.
 I will say that variable $x$ is in *Montgomery space*, if the actual value stored is $x \cdot 2^{32}$.
 
 If we multiply usual number and number from *Montgomery space* we will get usual number.
@@ -656,8 +663,8 @@ At previous step we switched to `radix4` butterfly, but number of top layers can
 But now it is possible to adjust the number of top layers by switching to $O(n^2)$ algorithm one layer earlier, so we can get rid of that `radix2` layer.
 
 Here we optimize computation of sum of products 
-by doing $\left( \sum_i a_i \cdot b_i \right) \ \%\ \text{mod}$ 
-instead of usual $\sum_i \left( a_i \cdot b_i\ \%\ \text{mod} \right)$
+by doing $\left( \sum\_i a\_i \cdot b\_i \right) \ \%\ \text{mod}$ 
+instead of usual $\sum\_i \left( a\_i \cdot b\_i\ \%\ \text{mod} \right)$
 Instead of reducing every product, we compute sum of products and perform a single reduction for that sum.
 This is important, since modular reduction is several times more costly than usual `32 x 32 -> 64` multiplication.
 
