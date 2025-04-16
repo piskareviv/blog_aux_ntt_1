@@ -81,7 +81,7 @@ void transform(int lg, u32* data) {
 <details> 
 <summary> More code </summary>
 
-<blockquote>
+
 
 ```cpp
 void butterfly_x2(u32& a, u32& b, u32 w) {
@@ -107,7 +107,7 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 
 ```
 
-</blockquote>
+
 
 </details>
 
@@ -120,11 +120,11 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 <details> 
 <summary> Benchmark plot </summary>
 
-<blockquote>
+
 
 <img src="../A/plot.svg">
 
-</blockquote>
+
 
 </details>
 
@@ -149,7 +149,7 @@ We will perform the same operations on the same variables, but their positions i
 <details> 
 <summary> Detailed explanation </summary>
 
-<blockquote>
+
 
 At `k`-th iteration of the outermost loop we do the following:
 
@@ -184,7 +184,7 @@ We may also notice, that arrays in `w` are now prefixes of each other, so we nee
 
 I substituted variables for shorter code, but workflow is still exactly the same.
 
-</blockquote>
+
 
 </details>
 
@@ -221,11 +221,11 @@ I will not mention inverse transform for the next steps, because it will be very
 <details> 
 <summary> Benchmark plot </summary>
 
-<blockquote>
+
 
 <img src="../A2/plot.svg">
 
-</blockquote>
+
 
 </details>
 
@@ -270,12 +270,12 @@ Initialization as is works in $\mathcal{O}(\log^2 n)$, but it is still negligibl
 <details> 
 <summary> Fun fact </summary>
 
-<blockquote>
+
 
 If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by this line `u32 f = mul(a, b);` (set `f` to `ab` instead of `a / b`),
 `convolve_cyclic` function will still work correctly. I don't really understand why, didn't give it much thought. 
 
-</blockquote>
+
 
 </details>
 
@@ -283,11 +283,11 @@ If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by t
 <details> 
 <summary> Benchmark plot </summary>
 
-<blockquote>
+
 
 <img src="../A3/plot.svg">
 
-</blockquote>
+
 
 </details>
 
@@ -306,7 +306,7 @@ vectorized version of any other reduction algorithm I tried (though there aren't
 <details>
 <summary> Quick explanation of Montgomery reduction </summary>
 
-<blockquote>
+
 
 <!-- Meow. -->
 
@@ -341,7 +341,7 @@ u32 mul(u32 a, u32 b) const {
 Lets instead of $a, b$ use their representatives in so-called *Montgomery space*: $a \cdot 2^{32}, b \cdot 2^{32}$. Then their *Montgomery product* `reduce(a * b)` will be $a \cdot 2^{32} \cdot a \cdot 2^{32} \cdot 2^{-32} = ab \cdot 2^{32}$ -- representative of $ab$ in *Montgomery space*.
 This will require us to multiply all values by $2^{32}$ before performing computations and multiply by $2^{-32}$ after.
 
-</blockquote>
+
 
 </details>
 
@@ -418,14 +418,14 @@ compiler will generate unnecessary load instructions for Montgomery constants in
 <details> 
 <summary> Benchmark plot </summary>
 
-<blockquote>
+
 
 <img src="../B/plot.svg">
 
 Compiler will already vectorize something with `-O3`,
 but manual vectorization will be several times more performant.
 
-</blockquote>
+
 
 </details>
 
@@ -476,7 +476,7 @@ with the longest dependency chain having latency of 18 cycles, with 3 multiplica
 <details>
 <summary> Explanation </summary>
 
-<blockquote>
+
 
 First we split input `u32x8`s into odd and even indices.
 Now we have 64-bit word for each element at our disposal,
@@ -510,7 +510,7 @@ The latter is also the reason why we can use `or` (or any other bit combining op
 
 
 <!-- Nya. -->
-</blockquote>
+
 
 </details>
 
@@ -560,11 +560,11 @@ The latter is quite important, since amount of twiddle factor recalculation grow
 <details> 
 <summary> Benchmark plot </summary>
 
-<blockquote>
+
 
 <img src="../C/plot.svg">
 
-</blockquote>
+
 
 </details>
 
@@ -603,11 +603,11 @@ If not for that, there would be almost no performance improvement (compared to r
 <details> 
 <summary> Benchmark plot </summary>
 
-<blockquote>
+
 
 <img src="../D/plot.svg">
 
-</blockquote>
+
 
 </details>
 
@@ -634,7 +634,7 @@ we will multiply $A(x) \bmod (x^8 - w_i)$ by $B(x) \bmod (x^8 - w_i)$ modulo $(x
 <details>
 <summary> implementation details </summary>
 
-<blockquote>
+
 
 It's hard to properly utilize ILP while doing only single multiplication $\bmod (x^8 - w_i)$, so we will do several such multiplications in *parallel* when possible.
 More precisely we will interleave computations involved in two or four such multiplications.
@@ -657,7 +657,7 @@ For some reason the compiler won't generate good enough code for this function w
 // ...
 ``` -->
 
-</blockquote>
+
 
 </details>
 
@@ -669,14 +669,14 @@ For some reason the compiler won't generate good enough code for this function w
 <details> 
 <summary> Benchmark plot </summary>
 
-<blockquote>
+
 
 <img src="../E/plot.svg">
 
 
 Now top and bottom layers are roughly equal (in terms of time per level), if you draw a line through part from $7$ to $20$ (before slowdown caused by memory throughput affects performance), it will almost pass through origin.
 
-</blockquote>
+
 
 </details>
 
@@ -738,7 +738,7 @@ and the (counterintuitive) fact that it (and higher radix transforms) might be l
 <details>
 <summary> Benchmark plot </summary>
 
-<blockquote>
+
 
 
 <img src="../F/plot.svg">
@@ -750,7 +750,7 @@ it will become clear that after the second vertical line (L2 cache) angle change
 and at `n = 2^29` recursive order is two-three times closer to that line than usual order.
 This is what we should expect, because for recursive order only one third of layers is affected (for sizes greater than $2^{20}$), whilst for usual order all layers are affected.
 
-</blockquote>
+
 
 </details>
 
@@ -759,7 +759,7 @@ This is what we should expect, because for recursive order only one third of lay
 <details>
 <summary> further I/O efficiency improvements </summary>
 
-<blockquote>
+
 
 <!-- https://judge.yosupo.jp/submission/176389 -->
 
@@ -784,7 +784,7 @@ it isn't the exact code, but it's pretty similar to the one used in benchmark.
 <details>
 <summary> benchmark plot </summary>
 
-<blockquote>
+
 
 
 <img src="./images/plot_x4_2.svg">
@@ -792,7 +792,7 @@ it isn't the exact code, but it's pretty similar to the one used in benchmark.
 Suffix `_x4` means that code is run in parallel on four cores.
 Suffix `_hrd` means that code uses that *`radix64`* transform.
 
-</blockquote>
+
 
 </details>
 
@@ -800,7 +800,7 @@ Suffix `_hrd` means that code uses that *`radix64`* transform.
 There might be ways to improve I/O optimality even further, but this blog is already too large.
 Some of them may involve permuting array elements or inserting *holes* to make caching all elements of higher radix transform in `L1` or `L2` possible.
 
-</blockquote>
+
 
 </details>
 
@@ -812,12 +812,12 @@ Some of them may involve permuting array elements or inserting *holes* to make c
 <details>
 <summary> ratio plot </summary>
 
-<blockquote>
+
 
 
 <img src="../F/ratio.svg">
 
-</blockquote>
+
 
 </details>
 
@@ -827,14 +827,14 @@ There are still things to improve, but doing so is rather complicated and won't 
 <details>
 <summary> Examples </summary>
 
-<blockquote>
+
 
 - Precompute `b * n_inv` for Montgomery multiplication if `b` is known in advance, to move one multiplication off longest dependency chain
 - Use different `radix4` implementation (factor common divisor of `w1`, `w2` and `w3` and rearrange computation a bit)
 - Optimize $\mathcal{O}(n^2)$ algorithm for bottom layers even better
 <!-- -  -->
 
-</blockquote>
+
 
 </details>
 
@@ -892,7 +892,7 @@ Computing $2a - a^2 b$:
 <summary> code </summary>
 
 
-<blockquote>
+
 
 ```cpp
 transform_forward(lg, a);
@@ -909,7 +909,7 @@ for (int i = 0; i < (1 << lg); i++) {
 transform_inverse(lg, c);
 ```
 
-</blockquote>
+
 
 
 </details> 
