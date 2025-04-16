@@ -1,5 +1,1 @@
-theme: minima
 title: Meow
-markdown: kramdown
-kramdown:
-  math_engine: mathjax
