@@ -123,7 +123,7 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 
 
 
-<img src="../A/plot.svg">
+<img src="A/plot.svg">
 
 
 
@@ -224,7 +224,7 @@ I will not mention inverse transform for the next steps, because it will be very
 
 
 
-<img src="../A2/plot.svg">
+<img src="A2/plot.svg">
 
 
 
@@ -286,7 +286,7 @@ If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by t
 
 
 
-<img src="../A3/plot.svg">
+<img src="A3/plot.svg">
 
 
 
@@ -421,7 +421,7 @@ compiler will generate unnecessary load instructions for Montgomery constants in
 
 
 
-<img src="../B/plot.svg">
+<img src="B/plot.svg">
 
 Compiler will already vectorize something with `-O3`,
 but manual vectorization will be several times more performant.
@@ -563,7 +563,7 @@ The latter is quite important, since amount of twiddle factor recalculation grow
 
 
 
-<img src="../C/plot.svg">
+<img src="C/plot.svg">
 
 
 
@@ -606,7 +606,7 @@ If not for that, there would be almost no performance improvement (compared to r
 
 
 
-<img src="../D/plot.svg">
+<img src="D/plot.svg">
 
 
 
@@ -672,7 +672,7 @@ For some reason the compiler won't generate good enough code for this function w
 
 
 
-<img src="../E/plot.svg">
+<img src="E/plot.svg">
 
 
 Now top and bottom layers are roughly equal (in terms of time per level), if you draw a line through part from $7$ to $20$ (before slowdown caused by memory throughput affects performance), it will almost pass through origin.
@@ -742,7 +742,7 @@ and the (counterintuitive) fact that it (and higher radix transforms) might be l
 
 
 
-<img src="../F/plot.svg">
+<img src="F/plot.svg">
 
 
 Now the plot looks straight, but it actually isn't. 
@@ -816,7 +816,7 @@ Some of them may involve permuting array elements or inserting *holes* to make c
 
 
 
-<img src="../F/ratio.svg">
+<img src="F/ratio.svg">
 
 
 
