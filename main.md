@@ -271,8 +271,8 @@ It's not hard to see that quotient `w[i + 1] / w[i]` depends only on number of t
 We can compute these quotients for every number of trailing ones.
 Then on every iteration of the middle loop we will:
 
-1. compute number of trailing ones in `i` (with the help of `tzcnt` instruction)
-2. multiply previous value of `w` by corresponding array element.
+1. Compute number of trailing ones in `i` (with the help of `tzcnt` instruction)
+2. Multiply previous value of `w` by corresponding array element.
 
 I think that having negligible initialization time and additional memory usage is cool
 enough to justify mild performance decrease.
