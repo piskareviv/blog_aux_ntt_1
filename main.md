@@ -4,6 +4,7 @@ details {
   border: 1px solid #aaa;
   border-radius: 4px;
   padding: 0.5em 0.5em 0;
+  margin-bottom: var(--content-gap);
 }
 
 summary {
@@ -40,7 +41,6 @@ details[open] summary {
 
 Hello everyone!
 
-<!-- In this blog  -->
 I want to share some of my thoughts and experiments on vectorizing NTT.
 
 I prefer NTT to real-valued FFT because of the imprecision of the latter.
@@ -151,11 +151,7 @@ Applying bit-reverse permutation is somehow annoying, because
 2. it is one of the worst memory access patterns (probably even worse than random)
 3. it is hard to speed up and vectorize
 
-<!-- 4) (looking ahead) the *three nested loops* we will get will be easier to optimize than the *three nested loops* we currently have  -->
-
-<!-- The most straightforward way to do so, is to perform all the calculations, but under assumption that our array is bit-reversed. -->
-The simplest way to get rid of bit-reversal is just not doing it. <!-- but taking into account that the array is permuted. -->
-Consider array elements as formal variables, permutation doesn't change their values, only their order in the array.
+The simplest way to get rid of bit-reversal is just not doing it. Consider array elements as formal variables, permutation doesn't change their values, only their order in the array.
 We will perform the same operations on the same variables, but their positions in the array will be different.
 
 
@@ -342,10 +338,8 @@ One of its proofs gives us explicit formula: $y = x + \left(\left(x \cdot -\text
 
 Then we can safely shift $y$ 32 bits to the right. Let `r = y >> 32` be the result.
 We know that $y < \text{mod}^2 + 2^{32} \cdot \text{mod} \implies r < \text{mod} + \frac{\text{mod}^2}{2^{32}}$. If $\text{mod}$ is less than $2^{32}$, then $r < 2 \cdot \text{mod}$. That means that we need conditional subtraction to reduce $r$ from $[0, 2 \cdot \text{mod})$ to $[0, \text{mod})$. 
-<!-- But if $\text{mod}$ is less than $2^{30}$, than $[0, 2 \cdot \text{mod}) \times [0, 2 \cdot \text{mod}) \subset [0, 4 \cdot \text{mod}^2) \subset [0, 2^{32} \cdot \text{mod})$. It means that even for $a, b \in [0, 2 \cdot \text{mod})$ the result will be in the same interval $[0, 2 \cdot \text{mod})$ -->
 
 ```cpp
-
 // n_inv = -inv(mod, 2^32) % 2^32
 
 u32 reduce(u64 val) const {
@@ -595,14 +589,14 @@ The latter is quite important, since amount of twiddle factor recalculation grow
 
 
 
-## Step D, radix4 butterfly
+## Step D, `radix4` butterfly
 
 
 We made the computational part of our algorithm 5-10x faster, but I/O can't keep up, 
 and our algorithm gets bottlenecked by memory bandwidth for large arrays ($n \ge 2^{20}$), even though memory access pattern is linear.
 Now we are going to reduce this slowdown.
 
-One of the possible solutions is to perform two layers simultaneously (with radix4 butterfly),
+One of the possible solutions is to perform two layers simultaneously (with `radix4` butterfly),
 this halves the number of memory scans and reduces speed of scanning twofold
 (since we are now doing two times more computation per byte loaded).
  
@@ -611,9 +605,9 @@ We implement `butterfly_x4` by simply stacking four `butterfly_x2` onto each oth
 Since the number of top layers may or may not be odd, we need to add one conditional `butterfly_x2` layer.
 I choose the topmost layer, because it is simplest to implement (all twiddle factors are ones).
 
-Another benefit of radix4 butterfly is the ability to (easily) vectorize recalculation of twiddle factors.
+Another benefit of `radix4` butterfly is the ability to (easily) vectorize recalculation of twiddle factors.
 Now each `butterfly_x4` requires three different twiddle factors, so we can pack them to a single `u64x4` and update simultaneously (like we did in bottom layers).
-If not for that, there would be almost no performance improvement (compared to radix2) for arrays fitting in L1 or L2 cache (at least on my machine).
+If not for that, there would be almost no performance improvement (compared to `radix2`) for arrays fitting in L1 or L2 cache (at least on my machine).
 
 
 
@@ -637,7 +631,7 @@ If not for that, there would be almost no performance improvement (compared to r
 ## Step E, optimizing bottom layers
 
 Bottom layers are really slow, 3 bottom layers take as much time as 10 top layers (probably because we didn't vectorize them properly).
-(Back in November 2023) I had been wondering how I could make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by `[user:pajenegod]` 
+(Back in November 2023) I had been wondering how I could make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by [user:pajenegod] 
 It clearly shows what exactly the code we got at step A2 is computing.
 Moreover, it suggests switching to $O(n^2)$ multiplication when we are running out of square roots.
 But there may be another reason for switching to $O(n^2)$ algorithm, it can simply be faster than $O(n \log n)$ algorithm for small values of $n$.
@@ -701,7 +695,8 @@ Now top and bottom layers are roughly equal (in terms of time per level), if you
 </details>
 
 
-
+Because we no longer need twiddle factors for bottom layers, we can perform convolution of larger arrays. For $\text{mod} = 998\,244\,353 = 2^{23} \cdot 7 \cdot 17 + 1$ the limit was $n = 2^{23}$, but now we can use $n = 2^{26}$.
+And for $\text{mod} = 469762049 = 2^{26} \cdot 7 + 1$ (this one has the largest power of two among all `30-bit` primes) we can use $n = 2^{30}$.
 
 But switching to $O(n^2)$ multiplication at bottom layers has downsides. 
 If we need to perform heavy computation with the output of NTT,
@@ -717,11 +712,6 @@ After finishing the topmost `radix4` layer, we get four independent parts,
 so we can perform computation for each part recursively. 
 With recursive order only several topmost layers will be affected by memory bandwidth slowdown.
 
-
-<!-- We can do it with explicit recursion, because we only need it for several topmost layers. -->
-<!-- But we can implement it in a fancy way: unroll recursion to a for loop by storing stack state in a bitmask.
-I first saw this idea in [this](https://judge.yosupo.jp/submission/201990) submission, 
-but there is a way to do similar thing simpler and faster. -->
 
 We can try explicit recursion, it won't introduce much of an overhead, because we only need it for several topmost layers.
 We can try unrolling recursion into a `for` loop by storing stack state in a bitmask.
@@ -781,7 +771,6 @@ This is what we should expect, because for recursive order only one third of lay
 
 
 
-<!-- https://judge.yosupo.jp/submission/176389 -->
 
 This part is based on my previous experiments, so there is no code for it, but workflow was pretty similar. 
 
@@ -793,7 +782,7 @@ For arrays that fit in L2 cache it makes no difference whether we run convolutio
 But for larger array performance of parallel version degrades quickly. 
 At the rightmost point `n = 2^28`, parallel version is almost two times slower.
 
-I tried using `radix64` on blocks of size `1024` (so one such transform acts on $1024 \cdot 64 = 65536$ elements in total) using three layers of `radix4` (we use *`radix64`* only when array doesn't fit in L2 cache).
+I tried using `radix64` on blocks of size `1024` (so one such transform acts on $1024 \cdot 64 = 65536$ elements in total) using three layers of `radix4` (we use `radix64` only when array doesn't fit in L2 cache).
 It did help, but I don't actually know why.
 I guess it's mainly because of L3 cache. Unlike L1 and L2 caches, L3 is capable of caching all $65536$ elements (not because of size, but because of the way it works). 
 Even though L3 is much slower than previous levels of cache and is shared between cores, it is still faster than main memory.
@@ -810,7 +799,7 @@ it isn't the exact code, but it's pretty similar to the one used in benchmark.
 <img src="./images/plot_x4_2.svg">
 
 Suffix `_x4` means that code is run in parallel on four cores.
-Suffix `_hrd` means that code uses that *`radix64`* transform.
+Suffix `_hrd` means that code uses that `radix64` transform.
 
 
 
@@ -928,9 +917,6 @@ for (int i = 0; i < (1 << lg); i++) {
 
 transform_inverse(lg, c);
 ```
-
-
-
 
 </details> 
 
