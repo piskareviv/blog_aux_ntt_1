@@ -1,0 +1,4 @@
+theme: minimal
+markdown: kramdown
+kramdown:
+    math_engine: katex
