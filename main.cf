@@ -1,28 +1,6 @@
-<style>
-
-details {
-  border: 1px solid #aaa;
-  border-radius: 4px;
-  padding: 0.5em 0.5em 0;
-}
-
-summary {
-  font-weight: bold;
-  margin: -0.5em -0.5em 0;
-  padding: 0.5em;
-}
-
-details[open] {
-  padding: 0.5em;
-}
-
-details[open] summary {
-  border-bottom: 1px solid #aaa;
-  margin-bottom: 0.5em;
-}
 
 
-</style>
+
 
 # Making NTT convolution 10x faster with avx2
 
@@ -782,7 +760,7 @@ Even though L3 is much slower than previous levels of cache and is shared betwee
 Check part from line 891 to line 989 of [this](https://judge.yosupo.jp/submission/176389) submission for implementation details, 
 it isn't the exact code, but it's pretty similar to the one used in benchmark.
 
-<details>
+<details markdown="1">
 <summary> benchmark plot </summary>
 
 

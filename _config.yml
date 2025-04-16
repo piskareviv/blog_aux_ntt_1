@@ -1,7 +1,5 @@
-theme: minima
+# theme: minima
 title: Meow
-# markdown: kramdown
-# kramdown:
-#   math_engine: mathjax
-#   parse_block_html: true
-  
+markdown: kramdown
+kramdown:
+  math_engine: mathjax
