@@ -59,7 +59,7 @@ Vertical dotted lines mark sizes of L1, L2 and L3 caches in `u32`s.
 
 ## The task
 
-Given coefficients of two polynomials $A(x), B(x) \in \mathbb{F}_{mod}[x]$, compute coefficients of $C(x) = A(x)B(x)$. Where $mod = 998\,244\,353$ (or other *sufficiently good* number).
+Given coefficients of two polynomials $A(x), B(x) \in \mathbb{F}_{\text{mod}}[x]$, compute coefficients of $C(x) = A(x)B(x)$. Where $\text{mod} = 998\,244\,353$ (or other *sufficiently good* number).
 
 Since it is accomplished by computing $A(x)B(x) \bmod (x^n - 1)$ (where $n$ is big enough power of two), we will focus on computing $A(x)B(x) \bmod (x^n - 1)$ for a given $n$. Such expression is also known as *cyclic convolution*.
 
@@ -221,7 +221,7 @@ void transform_forward(int lg, u32* data) {
 With such an approach output order of the `transform` function will be bit-reversed. It means nothing for pointwise product, but inverse transform has to be adjusted.
 It is no longer possible to efficiently express inverse transform using forward. <!-- (it is possible with additional bit-reverse, one instead of three, but this is still bad). -->
 But we always can invert any transform, just by inverting every operation performed in reversed order.
-`butterlfy_x2` is just multiplication by invertible `2x2` matrix. 
+`butterlfy_x2` is just multiplication by invertible `2x2` matrix (forward map $(a, b) \mapsto (a + b \cdot w, a - b \cdot w)$, inverse map $ $).
 Operations inside the two innermost loops are independent, so we need to reverse order of the outermost loop only.
 I will not mention inverse transform for the next steps, because it will be very similar to forward.
 
@@ -257,7 +257,7 @@ So to eliminate the need for an additional array of size $n$, we will use the va
 <!-- But  -->
 To achieve that, we need to know what the entries of array `w` are. 
 Let $g$ be the primitive root we are using.
-Let $w_{2^k} = g^{\frac{mod - 1}{2^k}}$.
+Let $w_{2^k} = g^{\frac{\text{mod} - 1}{2^k}}$.
 Let $F(s)$ denote the set of indices of all nonzero bits in $s$ (counting from $0$).
 Then `w[i]` is equal to $\prod\limits_{k \in F(i)} w_{2^{k + 2}}$.
 
@@ -325,17 +325,17 @@ vectorized version of any other reduction algorithm I tried (though there aren't
 
 Consider modular multiplication:
 
-We have two integers $a, b \in [0, mod)$. We compute their product $x = a \cdot b$.
-Now we want to bring $x$ back to $[0, mod)$. For some reason we want to do it by shifting $x$ 32-bits to the right (like `x >> 32`).
+We have two integers $a, b \in [0, \text{mod})$. We compute their product $x = a \cdot b$.
+Now we want to bring $x$ back to $[0, \text{mod})$. For some reason we want to do it by shifting $x$ 32-bits to the right (like `x >> 32`).
 But by doing so we will discard some information about $x$, more precisely its lower 32 bits.
 But maybe we can transfer all the information to higher bits (leaving 32 lower bits zeroed)?
-Formally we want to find $y$, such that $y \equiv_{mod} x$ and $y \equiv_{2^{32}} 0$.
-Chinese remainder theorem says, that there exists unique $y$, such that $0 \le y < 2^{32} \cdot mod$ (we assume that $mod$ is odd, since usually $mod$ is a big prime number).
-One of its proofs gives us explicit formula: $y = x + \left(\left(x \cdot -\text{inv}(mod, 2^{32})\right)  \bmod 2^{32} \right)\cdot mod$.
+Formally we want to find $y$, such that $y \equiv_{\text{mod}} x$ and $y \equiv_{2^{32}} 0$.
+Chinese remainder theorem says, that there exists unique $y$, such that $0 \le y < 2^{32} \cdot \text{mod}$ (we assume that $\text{mod}$ is odd, since usually $\text{mod}$ is a big prime number).
+One of its proofs gives us explicit formula: $y = x + \left(\left(x \cdot -\text{inv}(\text{mod}, 2^{32})\right)  \bmod 2^{32} \right)\cdot \text{mod}$.
 
 Then we can safely shift $y$ 32 bits to the right. Let `r = y >> 32` be the result.
-We know that $y < mod^2 + 2^{32} \cdot mod \implies r < mod + \frac{mod^2}{2^{32}}$. If $mod$ is less than $2^{32}$, then $r < 2 \cdot mod$. That means that we need conditional subtraction to reduce $r$ from $[0, 2 \cdot mod)$ to $[0, mod)$. 
-<!-- But if $mod$ is less than $2^{30}$, than $[0, 2 \cdot mod) \times [0, 2 \cdot mod) \subset [0, 4 \cdot mod^2) \subset [0, 2^{32} \cdot mod)$. It means that even for $a, b \in [0, 2 \cdot mod)$ the result will be in the same interval $[0, 2 \cdot mod)$ -->
+We know that $y < \text{mod}^2 + 2^{32} \cdot \text{mod} \implies r < \text{mod} + \frac{\text{mod}^2}{2^{32}}$. If $\text{mod}$ is less than $2^{32}$, then $r < 2 \cdot \text{mod}$. That means that we need conditional subtraction to reduce $r$ from $[0, 2 \cdot \text{mod})$ to $[0, \text{mod})$. 
+<!-- But if $\text{mod}$ is less than $2^{30}$, than $[0, 2 \cdot \text{mod}) \times [0, 2 \cdot \text{mod}) \subset [0, 4 \cdot \text{mod}^2) \subset [0, 2^{32} \cdot \text{mod})$. It means that even for $a, b \in [0, 2 \cdot \text{mod})$ the result will be in the same interval $[0, 2 \cdot \text{mod})$ -->
 
 ```cpp
 
@@ -350,7 +350,7 @@ u32 mul(u32 a, u32 b) const {
 }
 ```
 
-**There is a problem**: $r$ is not congruent to $x$ modulo $mod$, it is congruent to $x \cdot 2^{-32}$.
+**There is a problem**: $r$ is not congruent to $x$ modulo $\text{mod}$, it is congruent to $x \cdot 2^{-32}$.
 Lets instead of $a, b$ use their representatives in so-called *Montgomery space*: $a \cdot 2^{32}, b \cdot 2^{32}$. Then their *Montgomery product* `reduce(a * b)` will be $a \cdot 2^{32} \cdot a \cdot 2^{32} \cdot 2^{-32} = ab \cdot 2^{32}$ -- representative of $ab$ in *Montgomery space*.
 This will require us to multiply all values by $2^{32}$ before performing computations and multiply by $2^{-32}$ after.
 
@@ -370,7 +370,7 @@ There are four places where we use multiplication:
 3. For pointwise multiplication
 4. For precomputing twiddle factors
 
-I will call map $ \mathbb{F}_{mod} \times \mathbb{F}_{mod} \to \mathbb{F}_{mod} \quad a, b \mapsto ab \cdot 2^{-32} $ *Montgomery multiplication*.
+I will call map $ \mathbb{F}_{\text{mod}} \times \mathbb{F}_{\text{mod}} \to \mathbb{F}_{\text{mod}} \quad a, b \mapsto ab \cdot 2^{-32} $ *Montgomery multiplication*.
 I will say that variable $x$ is in *Montgomery space*, if the actual value stored is $x \cdot 2^{32}$.
 
 If we multiply usual number and number from *Montgomery space* we will get usual number.
@@ -392,8 +392,8 @@ Though this approach won't work for non-homogeneous polynomials, like $2a - a^2b
 
 
 Moduli are typically `30-bit` wide, and we can abuse that.
-Instead of always having all numbers in $[0, mod)$, we will allow them to be in $[0, 2 \cdot mod)$ or $[0, 4 \cdot mod)$ and apply `shrink` when necessary (previously we would perform `shrink` immediately after addition/subtraction).
-For `30-bit` moduli Montgomery reduction can reduce from $[0, 4 \cdot mod^2) \subset [0, 2^{32} \cdot mod) $ to $[0, 2 \cdot mod)$.
+Instead of always having all numbers in $[0, \text{mod})$, we will allow them to be in $[0, 2 \cdot \text{mod})$ or $[0, 4 \cdot \text{mod})$ and apply `shrink` when necessary (previously we would perform `shrink` immediately after addition/subtraction).
+For `30-bit` moduli Montgomery reduction can reduce from $[0, 4 \cdot \text{mod}^2) \subset [0, 2^{32} \cdot \text{mod}) $ to $[0, 2 \cdot \text{mod})$.
 This allows us to reduce number of `shrink`s
 (though we should be careful about it, it's very easy to place a bug while counting how many `shrink`s have to be applied)
 
@@ -656,8 +656,8 @@ At previous step we switched to `radix4` butterfly, but number of top layers can
 But now it is possible to adjust the number of top layers by switching to $O(n^2)$ algorithm one layer earlier, so we can get rid of that `radix2` layer.
 
 Here we optimize computation of sum of products 
-by doing $\left( \sum_i a_i \cdot b_i \right) \ \%\ mod$ 
-instead of usual $\sum_i \left( a_i \cdot b_i\ \%\ mod \right)$
+by doing $\left( \sum_i a_i \cdot b_i \right) \ \%\ \text{mod}$ 
+instead of usual $\sum_i \left( a_i \cdot b_i\ \%\ \text{mod} \right)$
 Instead of reducing every product, we compute sum of products and perform a single reduction for that sum.
 This is important, since modular reduction is several times more costly than usual `32 x 32 -> 64` multiplication.
 
