@@ -136,7 +136,7 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 
 <img src="A/plot.svg">
 
-`data_bit_reverse` -- only bit-reversal (first loop in the `transform` function)
+`data_bit_reverse` -- only bit-reversal (the first loop in the `transform` function)
 
 
 </details>
@@ -252,7 +252,7 @@ I will not mention inverse transform for the next steps, because it will be very
 
 
 Note that new implementation loads the value of `w[i]` just $n - 1$ times, compared to $\frac{1}{2} n \log_2 n$ times for standard implementation
-(we can swap two innermost loops and get the same $n - 1$ times, but memory access pattern will become awful).
+(we can swap the two innermost loops and get the same $n - 1$ times, but memory access pattern will become awful).
 
 It means that computing value of `w[i]` on fly (with one multiplication), instead of loading it from precomputed array, will not result in terrible performance decrease.
 So to eliminate the need for an additional array of size $n$, we will use the value of `w[i]`, a precomputed array of size $\log_2 n$ and one multiplication to compute the value of `w[i + 1]`.
@@ -313,7 +313,7 @@ If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by t
 ## Step B, utilizing Montgomery reduction
 
 
-So far we have relied on compiler generated (for known in compile-time modulo) Barrett reduction.
+So far we have relied on compiler-generated (for known in compile-time modulo) Barrett reduction.
 To vectorize modular arithmetic we need to know it works, so on this step we will implement manual handling of all modular arithmetic. 
 I will use Montgomery reduction, because vectorized version of it performed better than
 vectorized version of any other reduction algorithm I tried (though there aren't many of them).
