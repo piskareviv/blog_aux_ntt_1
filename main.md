@@ -7,7 +7,7 @@ details {
 }
 
 summary {
-  font-weight: bold;
+  /* font-weight: bold; */
   margin: -0.5em -0.5em 0;
   padding: 0.5em;
 }
@@ -23,6 +23,9 @@ details[open] summary {
 
 </style>
 
+<script type="text/javascript"
+  src="https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
 
 
 # Making NTT convolution 10x faster with avx2
@@ -730,7 +733,7 @@ Inverse transform can be made fully recursive similarly, but we ascend by `1` ed
 
 
 
-> **Note**: I don't really know if `radix8` is an option, there might be issues with it, such as lack of logical registers (`avx2` has only 16), enormous (machine) code size (~220 instructions per butterfly, don't really know if it matters)
+**Note**: I don't really know if `radix8` is an option, there might be issues with it, such as lack of logical registers (`avx2` has only 16), enormous (machine) code size (~220 instructions per butterfly, don't really know if it matters)
 and the (counterintuitive) fact that it (and higher radix transforms) might be less I/O optimal because of the way cache associativity works.
 
 
