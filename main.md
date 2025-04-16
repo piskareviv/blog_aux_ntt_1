@@ -731,7 +731,7 @@ Now we want to do it in recursive order.
 <img src="./images/call_tree.svg">
 
 We may notice a pattern: if we ascend from a leaf node using `0` edges only, we will traverse a consecutive segment of recursive calls (these paths are marked with color). 
-So let's iterate over leaf nodes, ascend until we meet a `1` edge, and perform corresponding transforms in nodes of traversed path (we need to perform them from top to bottom).
+So let's iterate over leaf nodes, ascend until we meet a `1` edge, and perform corresponding transforms in nodes of traversed path (they should be performed from top to bottom).
 Length of the path can be calculated with the help of `tzcnt` instruction -- it is exactly number of trailing zeros in binary representation of leaf index.
 Order of `aux_transform` calls is still consecutive on each layer, so twiddle factors will be updated correctly.
 Leftmost path will be a special case, since all `aux_transform` calls on it will have twiddle factors of one. 
@@ -863,7 +863,7 @@ So, to measure actual computation time more accurately, one needs to do it by hi
 
 Our submission uses `~7.0ms` for actual computation (of cyclic convolution of size $2^{20}$). 
 Author of [top1 submission](https://judge.yosupo.jp/submission/199421) (as of 17 Aug of 2024) also printed actual computation time to stderr, his submission uses `~6.5ms`.
-And [this](https://judge.yosupo.jp/submission/201990) submission (by the same author) uses just `~6.05ms`, though it doesn't have fast I/O and runs in more `100ms` in total.
+And [this](https://judge.yosupo.jp/submission/201990) submission (by the same author) uses just `~6.05ms`, though it doesn't have fast I/O and runs in more than `100ms` in total.
 
 
 <!-- 
