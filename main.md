@@ -4,7 +4,7 @@ details {
   border: 1px solid #aaa;
   border-radius: 4px;
   padding: 0.5em 0.5em 0;
-  margin-bottom: var(--content-gap);
+  margin-bottom: 1em;
 }
 
 summary {
