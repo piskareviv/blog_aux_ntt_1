@@ -31,6 +31,10 @@ details[open] summary {
   src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script>
 
+
+
+
+
 # Making NTT convolution 10x faster with avx2
 
 
@@ -366,7 +370,7 @@ There are four places where we use multiplication:
 3. For pointwise multiplication
 4. For precomputing twiddle factors
 
-I will call map $\mathbb{F}_{mod} \times \mathbb{F}_{mod} \to \mathbb{F}_{mod} \quad a, b \mapsto ab \cdot 2^{-32}$ *Montgomery multiplication*.
+I will call map $ \mathbb{F}_{mod} \times \mathbb{F}_{mod} \to \mathbb{F}_{mod} \quad a, b \mapsto ab \cdot 2^{-32} $ *Montgomery multiplication*.
 I will say that variable $x$ is in *Montgomery space*, if the actual value stored is $x \cdot 2^{32}$.
 
 If we multiply usual number and number from *Montgomery space* we will get usual number.
