@@ -55,7 +55,7 @@ Vertical dotted lines mark sizes of L1, L2 and L3 caches in `u32`s.
 
 ## The task
 
-> Given coefficients of two polynomials $A(x), B(x) \in \mathbb{F}_{mod}[x]$, compute coefficients of $C(x) = A(x)B(x)$. Where $mod = 998\,244\,353$ (or other *sufficiently good* number).
+Given coefficients of two polynomials $A(x), B(x) \in \mathbb{F}_{mod}[x]$, compute coefficients of $C(x) = A(x)B(x)$. Where $mod = 998\,244\,353$ (or other *sufficiently good* number).
 
 Since it is accomplished by computing $A(x)B(x) \bmod (x^n - 1)$ (where $n$ is big enough power of two), we will focus on computing $A(x)B(x) \bmod (x^n - 1)$ for a given $n$. Such expression is also known as *cyclic convolution*.
 
@@ -132,6 +132,7 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 
 <img src="A/plot.svg">
 
+`data_bit_reverse` -- only bit-reversal (first loop in the `transform` function)
 
 
 </details>
@@ -345,7 +346,7 @@ u32 mul(u32 a, u32 b) const {
 }
 ```
 
-> **There is a problem**: $r$ is not congruent to $x$ modulo $mod$, it is congruent to $x \cdot 2^{-32}$.
+**There is a problem**: $r$ is not congruent to $x$ modulo $mod$, it is congruent to $x \cdot 2^{-32}$.
 Lets instead of $a, b$ use their representatives in so-called *Montgomery space*: $a \cdot 2^{32}, b \cdot 2^{32}$. Then their *Montgomery product* `reduce(a * b)` will be $a \cdot 2^{32} \cdot a \cdot 2^{32} \cdot 2^{-32} = ab \cdot 2^{32}$ -- representative of $ab$ in *Montgomery space*.
 This will require us to multiply all values by $2^{32}$ before performing computations and multiply by $2^{-32}$ after.
 
@@ -365,7 +366,7 @@ There are four places where we use multiplication:
 3. For pointwise multiplication
 4. For precomputing twiddle factors
 
-I will call map $\mathbb{F}_{mod} \times \mathbb{F}_{mod} \to \mathbb{F}_{mod} \ \ \ \ a, b \mapsto ab \cdot 2^{-32}$ *Montgomery multiplication*.
+I will call map $\mathbb{F}_{mod} \times \mathbb{F}_{mod} \to \mathbb{F}_{mod} \quad a, b \mapsto ab \cdot 2^{-32}$ *Montgomery multiplication*.
 I will say that variable $x$ is in *Montgomery space*, if the actual value stored is $x \cdot 2^{32}$.
 
 If we multiply usual number and number from *Montgomery space* we will get usual number.
