@@ -259,13 +259,13 @@ To achieve that, we need to know what the entries of array `w` are.
 Let $g$ be the primitive root we are using.
 Let
 
-$$w_{2^k} = g^{\frac{\text{mod} - 1}{2^k}}$$
+$$\Large w_{2^k} = g^{\frac{\text{mod} - 1}{2^{k + 2}}}$$
 
 Let $F(s)$ denote the set of indices of all nonzero bits in $s$ (counting from $0$).
 
 Then `w[i]` is equal to
 
-$$\prod\limits_{k \in F(i)} w_{2^{k + 2}}$$
+$$\Large w_i = \prod\limits_{k \in F(i)} w_{2^{k}}$$
 
 It's not hard to see that quotient `w[i + 1] / w[i]` depends only on number of trailing ones in binary representation of `i`.
 We can compute these quotients for every number of trailing ones.
