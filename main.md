@@ -675,7 +675,7 @@ we will multiply $A(x) \bmod (x^8 - w_i)$ by $B(x) \bmod (x^8 - w_i)$ modulo $(x
 
 
 <details markdown="1">
-<summary> implementation details </summary>
+<summary> Implementation details </summary>
 
 
 
@@ -796,7 +796,7 @@ This is what we should expect, because for recursive order only one third of lay
 
 
 <details markdown="1">
-<summary> further I/O efficiency improvements </summary>
+<summary> Further I/O efficiency improvements </summary>
 
 
 
@@ -820,7 +820,7 @@ Check part from line 891 to line 989 of [this](https://judge.yosupo.jp/submissio
 it isn't the exact code, but it's pretty similar to the one used in benchmark.
 
 <details markdown="1">
-<summary> benchmark plot </summary>
+<summary> Benchmark plot </summary>
 
 
 
@@ -848,7 +848,7 @@ Some of them may involve permuting array elements or inserting holes to make cac
 
 
 <details markdown="1">
-<summary> ratio plot </summary>
+<summary> Ratio plot </summary>
 
 
 
