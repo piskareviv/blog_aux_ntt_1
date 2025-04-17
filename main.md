@@ -39,7 +39,7 @@ I want to share some of my thoughts and experiments on vectorizing NTT.
 
 I prefer NTT to real-valued FFT because of the imprecision of the latter.
 I use `avx2` because it is the most advanced vector extension supported by the majority of modern online judges (including Codeforces), as of 2024. 
-And I have no idea how many bugs and how much UB my code contains, at least it passes some kind of tests.
+And I have no idea how many bugs (already found two) and how much UB my code contains, at least it passes some kind of tests.
 
 
 ### Benchmark info
@@ -660,7 +660,7 @@ If not for that, there would be almost no performance improvement (compared to `
 ## Step E, optimizing bottom layers
 
 Bottom layers are really slow, 3 bottom layers take as much time as 10 top layers (probably because we didn't vectorize them properly).
-(Back in November 2023) I had been wondering how I could make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by [user:pajenegod] 
+(Back in November 2023) I had been wondering how I could make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by [user:pajenegod].
 It clearly shows what exactly the code we got at step A2 is computing.
 Moreover, it suggests switching to $O(n^2)$ multiplication when we are running out of square roots.
 But there may be another reason for switching to $O(n^2)$ algorithm, it can simply be faster than $O(n \log n)$ algorithm for small values of $n$.
@@ -892,6 +892,9 @@ So, to measure actual computation time more accurately, one needs to do it by hi
 Our submission uses `~7.0ms` for actual computation (of cyclic convolution of size $2^{20}$). 
 Author of [top1 submission](https://judge.yosupo.jp/submission/199421) (as of 17 Aug of 2024) also printed actual computation time to stderr, his submission uses `~6.5ms`.
 And [this](https://judge.yosupo.jp/submission/201990) submission (by the same author) uses just `~6.05ms`, though it doesn't have fast I/O and runs in more than `100ms` in total.
+
+
+---
 
 
 <!-- 
