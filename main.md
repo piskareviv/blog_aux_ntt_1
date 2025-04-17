@@ -130,7 +130,7 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 
 <img src="A/plot.svg">
 
-`data_bit_reverse` -- only bit-reversal (the first loop in the `transform` function)
+`bit_reverse` -- only bit-reversal (the first loop in the `transform` function)
 
 
 </details>
