@@ -147,9 +147,9 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 
 Applying bit-reverse permutation is somehow annoying, because
 
-1. it is not useful work
-2. it is one of the worst memory access patterns (probably even worse than random)
-3. it is hard to speed up and vectorize
+1. It is not useful work
+2. It is one of the worst memory access patterns (probably even worse than random)
+3. It is hard to speed up and vectorize
 
 The simplest way to get rid of bit-reversal is just not doing it. Consider array elements as formal variables, permutation doesn't change their values, only their order in the array.
 We will perform the same operations on the same variables, but their positions in the array will be different.
@@ -225,7 +225,7 @@ $$
 $$ 
 
 $$
-(x, y) \mapsto \frac{1}{2} \left(x + y,\ \frac{1}{w}(x + y)\right) = (a, b)
+(x, y) \mapsto \frac{1}{2} \left(x + y,\ \frac{1}{w}(x - y)\right) = (a, b)
 $$
 
 Operations inside the two innermost loops are independent, so we need to reverse order of the outermost loop only.
@@ -337,7 +337,12 @@ But by doing so we will discard some information about $x$, more precisely its l
 But maybe we can transfer all the information to higher bits (leaving 32 lower bits zeroed)?
 Formally we want to find $y$, such that $y \equiv_{\text{mod}} x$ and $y \equiv_{2^{32}} 0$.
 Chinese remainder theorem says, that there exists unique $y$, such that $0 \le y < 2^{32} \cdot \text{mod}$ (we assume that $\text{mod}$ is odd, since usually $\text{mod}$ is a big prime number).
-One of its proofs gives us explicit formula: $y = x + \left(\left(x \cdot -\text{inv}(\text{mod}, 2^{32})\right)  \bmod 2^{32} \right)\cdot \text{mod}$.
+One of its proofs gives us explicit formula: $y = x + \left(\left(x \cdot \text{inv}(-\text{mod}, 2^{32})\right)  \%\ 2^{32} \right)\cdot \text{mod}$. 
+We can precompute $\text{inv}(-\text{mod}, 2^{32})$ -- inverse of $-\text{mod}$ in $\mathbb{Z}^{*}_{2^{32}}$ and use only lightweight operations (multiplication, addition, bit-shift) to compute $y$.
+
+
+
+
 
 Then we can safely shift $y$ 32 bits to the right. Let `r = y >> 32` be the result.
 We know that $y < \text{mod}^2 + 2^{32} \cdot \text{mod} \implies r < \text{mod} + \frac{\text{mod}^2}{2^{32}}$. If $\text{mod}$ is less than $2^{32}$, then $r < 2 \cdot \text{mod}$. That means that we need conditional subtraction to reduce $r$ from $[0, 2 \cdot \text{mod})$ to $[0, \text{mod})$. 
@@ -355,8 +360,29 @@ u32 mul(u32 a, u32 b) const {
 ```
 
 **There is a problem**: $r$ is not congruent to $x$ modulo $\text{mod}$, it is congruent to $x \cdot 2^{-32}$.
-Lets instead of $a, b$ use their representatives in so-called *Montgomery space*: $a \cdot 2^{32}, b \cdot 2^{32}$. Then their *Montgomery product* `reduce(a * b)` will be $a \cdot 2^{32} \cdot a \cdot 2^{32} \cdot 2^{-32} = ab \cdot 2^{32}$ -- representative of $ab$ in *Montgomery space*.
+Lets instead of $a, b$ use their representatives in so-called *Montgomery space*: $a \cdot 2^{32}, b \cdot 2^{32}$. Then their *Montgomery product* `reduce(a * b)` will be $a \cdot 2^{32} \cdot b \cdot 2^{32} \cdot 2^{-32} = ab \cdot 2^{32}$ -- representative of $ab$ in *Montgomery space*.
 This will require us to multiply all values by $2^{32}$ before performing computations and multiply by $2^{-32}$ after.
+
+
+
+
+<details markdown="1">
+<summary> Note on computing the inverse </summary>
+
+
+
+We don't need the extended Euclidean algorithm to compute the inverse.
+Since we're computing inverse modulo $2^{32}$, we can use Newton's method instead (what we need is exactly 2-adic inverse). 
+This results in shorter and more efficient code:
+
+```cpp
+n_inv = 1;
+for (int i = 0; i < 5; i++) {
+    n_inv *= 2 + n_inv * mod;
+}
+```
+
+</details>
 
 
 
@@ -844,11 +870,13 @@ There are still things to improve, but doing so is rather complicated and won't 
 - Precompute `b * n_inv` for Montgomery multiplication if `b` is known in advance, to move one multiplication off longest dependency chain
 - Use different `radix4` implementation (factor common divisor of `w1`, `w2` and `w3` and rearrange computation a bit)
 - Optimize $O(n^2)$ algorithm for bottom layers even better
-<!-- -  -->
-
+- Use Barrett reduction in the pointwise multiplication part
+<!-- - Improve performance for small arrays  -->
 
 
 </details>
+
+
 
 
 
