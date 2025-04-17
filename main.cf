@@ -293,7 +293,7 @@ If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by t
 
 
 So far we have relied on compiler-generated (for known in compile-time modulo) Barrett reduction.
-To vectorize modular arithmetic we need to know it works, so on this step we will implement manual handling of all modular arithmetic. 
+To vectorize modular arithmetic we need to know how it works, so on this step we will implement manual handling of all modular arithmetic. 
 I will use Montgomery reduction, because vectorized version of it performed better than
 vectorized version of any other reduction algorithm I tried (though there aren't many of them).
 
