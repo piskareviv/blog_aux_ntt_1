@@ -650,7 +650,7 @@ we will multiply $A(x) \bmod (x^8 - w_i)$ by $B(x) \bmod (x^8 - w_i)$ modulo $(x
 
 
 
-<spoiler summary=" implementation details "> 
+<spoiler summary=" Implementation details "> 
  
 
 
@@ -771,7 +771,7 @@ This is what we should expect, because for recursive order only one third of lay
 
 
 
-<spoiler summary=" further I/O efficiency improvements "> 
+<spoiler summary=" Further I/O efficiency improvements "> 
  
 
 
@@ -795,7 +795,7 @@ Even though L3 is much slower than previous levels of cache and is shared betwee
 Check part from line 891 to line 989 of [this](https://judge.yosupo.jp/submission/176389) submission for implementation details, 
 it isn't the exact code, but it's pretty similar to the one used in benchmark.
 
-<spoiler summary=" benchmark plot "> 
+<spoiler summary=" Benchmark plot "> 
  
 
 
@@ -812,7 +812,7 @@ Suffix `_hrd` means that code uses that `radix64` transform.
 
 
 There might be ways to improve I/O optimality even further, but this blog is already too large.
-Some of them may involve permuting array elements or inserting *holes* to make caching all elements of higher radix transform in `L1` or `L2` possible.
+Some of them may involve permuting array elements or inserting holes to make caching all elements of a higher radix transform in L1 or L2 possible.
 
 
 
@@ -823,7 +823,7 @@ Some of them may involve permuting array elements or inserting *holes* to make c
 ## Final result
 
 
-<spoiler summary=" ratio plot "> 
+<spoiler summary=" Ratio plot "> 
  
 
 
@@ -847,7 +847,7 @@ There are still things to improve, but doing so is rather complicated and won't 
 - Use different `radix4` implementation (factor common divisor of `w1`, `w2` and `w3` and rearrange computation a bit)
 - Optimize $O(n^2)$ algorithm for bottom layers even better
 - Use Barrett reduction in the pointwise multiplication part
-<!-- - Improve performance for small arrays  -->
+- Improve performance on small arrays
 
 
  </spoiler>
