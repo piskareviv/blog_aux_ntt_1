@@ -836,7 +836,7 @@ Suffix `_hrd` means that code uses that `radix64` transform.
 
 
 There might be ways to improve I/O optimality even further, but this blog is already too large.
-Some of them may involve permuting array elements or inserting *holes* to make caching all elements of higher radix transform in `L1` or `L2` possible.
+Some of them may involve permuting array elements or inserting holes to make caching all elements of a higher radix transform in L1 or L2 possible.
 
 
 
@@ -871,7 +871,7 @@ There are still things to improve, but doing so is rather complicated and won't 
 - Use different `radix4` implementation (factor common divisor of `w1`, `w2` and `w3` and rearrange computation a bit)
 - Optimize $O(n^2)$ algorithm for bottom layers even better
 - Use Barrett reduction in the pointwise multiplication part
-<!-- - Improve performance for small arrays  -->
+- Improve performance on small arrays
 
 
 </details>
