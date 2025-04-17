@@ -7,7 +7,7 @@ make_plot([
     ("data_ntt.txt", "E"),
     ("../D/data_ntt.txt", "D"),
     ("../A/data_bit_reverse.txt", "bit reverse"),
-], "plot")
+], "plot", y_ticks=2)
 
 make_plot([
     ("data_ntt.txt", "E"),

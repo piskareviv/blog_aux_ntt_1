@@ -32,10 +32,10 @@ def plot(file, scale=1.0, **kwargs):
         plt.axline((x[9], y[9]), (x[15], y[15]), color="red", linestyle="--")
 
 
-def make_plot(files, out_file, show=False, large_y_ticks=False, **kwargs):
+def make_plot(files, out_file, show=False, y_ticks=1, **kwargs):
     my_dpi = 200
     plt.figure(figsize=(1920 / my_dpi, 1080 / my_dpi), dpi=my_dpi)
-    plt.yticks(np.arange(0, 201, 10) if large_y_ticks else np.arange(0, 101, 1))
+    plt.yticks(np.arange(0, 100 * y_ticks + 1, y_ticks))
 
     plt.xticks(np.arange(0, 31, 1))
     plt.grid(linestyle="--")

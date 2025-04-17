@@ -9,10 +9,10 @@ make_plot([
     ("../B/data_ntt.txt", "B"),
     ("../B/data_ntt_O3.txt", "B O3"),
     ("../A/data_bit_reverse.txt", "bit reverse"),
-], "plot", large_y_ticks=True)
+], "plot", y_ticks=10)
 
 make_plot([
     ("data_ntt.txt", "C"),
     ("data_ntt_O3.txt", "C O3"),
     ("../A/data_bit_reverse.txt", "bit reverse"),
-], "plot1")
+], "plot1", y_ticks=2)

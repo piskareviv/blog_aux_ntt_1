@@ -16,7 +16,7 @@ run () {
 }
 
 for folder in `ls -d */`; do
-    if [[ $folder != *"text"* && $folder != *"images"* && $folder != "_includes" ]]; then
+    if [[ $folder != *"text"* && $folder != *"images"* && $folder != *"_includes"* ]]; then
         run $folder
     fi
 done

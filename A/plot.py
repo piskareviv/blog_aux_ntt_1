@@ -6,4 +6,4 @@ exec(open(path.join("..", "plot.py")).read())
 make_plot([
     ("data_ntt.txt", "A"),
     ("data_bit_reverse.txt", "bit reverse")
-], "plot", large_y_ticks=True)
+], "plot", y_ticks=10)

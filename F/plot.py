@@ -9,19 +9,19 @@ exec(open(path.join("..", "plot.py")).read())
 make_plot([
     ("data_ntt.txt", "F"),
     ("../E/data_ntt.txt", "E")
-], "plot", draw_line="data_ntt.txt")
+], "plot", draw_line="data_ntt.txt",  y_ticks=1)
 
 make_plot([
     ("data_ntt.txt", "F"),
     ("../E/data_ntt.txt", "E"),
     ("../A/data_bit_reverse.txt", "bit reverse"),
-], "plot1")
+], "plot1", y_ticks=2)
 
 make_plot([
     ("data_ntt.txt", "F"),
     ("data_ntt_O3.txt", "F O3"),
     ("../A/data_bit_reverse.txt", "bit reverse")
-], "plot2")
+], "plot2", y_ticks=2)
 
 
 def make_ratio_plot(file1, file2, out_file):
