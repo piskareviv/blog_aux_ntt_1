@@ -25,12 +25,6 @@ details[open] summary {
 </style>
 
 
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
-</script>
-<script type="text/javascript"
-  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-</script>
 
 
 
@@ -263,9 +257,15 @@ So to eliminate the need for an additional array of size $n$, we will use the va
 <!-- But  -->
 To achieve that, we need to know what the entries of array `w` are. 
 Let $g$ be the primitive root we are using.
-Let $w_{2^k} = g^{\frac{\text{mod} - 1}{2^k}}$.
+Let
+
+$$w_{2^k} = g^{\frac{\text{mod} - 1}{2^k}}$$
+
 Let $F(s)$ denote the set of indices of all nonzero bits in $s$ (counting from $0$).
-Then `w[i]` is equal to $\prod\limits_{k \in F(i)} w_{2^{k + 2}}$.
+
+Then `w[i]` is equal to
+
+$$\prod\limits_{k \in F(i)} w_{2^{k + 2}}$$
 
 It's not hard to see that quotient `w[i + 1] / w[i]` depends only on number of trailing ones in binary representation of `i`.
 We can compute these quotients for every number of trailing ones.
