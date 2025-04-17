@@ -724,7 +724,7 @@ Now top and bottom layers are roughly equal (in terms of time per level), if you
 </details>
 
 
-Because we no longer need twiddle factors for bottom layers, we can perform convolution of larger arrays. For $\text{mod} = 998\,244\,353 = 2^{23} \cdot 7 \cdot 17 + 1$ the limit was $n = 2^{23}$, but now we can use $n = 2^{26}$.
+Because we no longer need twiddle factors for bottom layers, we can perform convolution on larger arrays. For $\text{mod} = 998\,244\,353 = 2^{23} \cdot 7 \cdot 17 + 1$ the limit was $n = 2^{23}$, but now we can use $n = 2^{26}$.
 And for $\text{mod} = 469762049 = 2^{26} \cdot 7 + 1$ (this one has the largest power of two among all `30-bit` primes) we can use $n = 2^{30}$.
 
 But switching to $O(n^2)$ multiplication at bottom layers has downsides. 
