@@ -661,7 +661,7 @@ If not for that, there would be almost no performance improvement (compared to `
 
 Bottom layers are really slow, 3 bottom layers take as much time as 10 top layers (probably because we didn't vectorize them properly).
 (Back in November 2023) I had been wondering how I could make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by
-[<span style="color: red; font-weight: bold;;">pajenegod</span>](https://codeforces.com/profile/pajenegod).
+[<span style="color: red; font-weight: bold;">pajenegod</span>](https://codeforces.com/profile/pajenegod).
 It clearly shows what exactly the code we got at step A2 is computing.
 Moreover, it suggests switching to $O(n^2)$ multiplication when we are running out of square roots.
 But there may be another reason for switching to $O(n^2)$ algorithm, it can simply be faster than $O(n \log n)$ algorithm for small values of $n$.
@@ -718,7 +718,7 @@ For some reason the compiler won't generate good enough code for this function w
 <img src="E/plot.svg">
 
 
-Now top and bottom layers are roughly equal (in terms of time per level), if you draw a line through part from $7$ to $20$ (before slowdown caused by memory throughput affects performance), it will almost pass through origin.
+Now top and bottom layers are roughly equal (in terms of time per level), if you draw a line through part from $n=2^7$ to $n=2^{20}$ (before slowdown caused by memory throughput affects performance), it will almost pass through origin.
 
 
 
@@ -785,7 +785,7 @@ and the (counterintuitive) fact that it (and higher radix transforms) might be l
 
 
 Now the plot looks straight, but it actually isn't. 
-If you draw a line through unaffected part (or simply put an edge of a paper sheet to your screen), 
+If you draw a line through unaffected part, 
 it will become clear that after the second vertical line (L2 cache) angle changes a little,
 and at `n = 2^29` recursive order is two-three times closer to that line than usual order.
 This is what we should expect, because for recursive order only one third of layers is affected (for sizes greater than $2^{20}$), whilst for usual order all layers are affected.

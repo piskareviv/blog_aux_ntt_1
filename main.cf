@@ -694,7 +694,7 @@ For some reason the compiler won't generate good enough code for this function w
 <img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/refs/heads/master/E/plot.svg">
 
 
-Now top and bottom layers are roughly equal (in terms of time per level), if you draw a line through part from $7$ to $20$ (before slowdown caused by memory throughput affects performance), it will almost pass through origin.
+Now top and bottom layers are roughly equal (in terms of time per level), if you draw a line through part from $n=2^7$ to $n=2^{20}$ (before slowdown caused by memory throughput affects performance), it will almost pass through origin.
 
 
 
@@ -761,7 +761,7 @@ and the (counterintuitive) fact that it (and higher radix transforms) might be l
 
 
 Now the plot looks straight, but it actually isn't. 
-If you draw a line through unaffected part (or simply put an edge of a paper sheet to your screen), 
+If you draw a line through unaffected part, 
 it will become clear that after the second vertical line (L2 cache) angle changes a little,
 and at `n = 2^29` recursive order is two-three times closer to that line than usual order.
 This is what we should expect, because for recursive order only one third of layers is affected (for sizes greater than $2^{20}$), whilst for usual order all layers are affected.
