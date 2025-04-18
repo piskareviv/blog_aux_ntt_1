@@ -158,7 +158,7 @@ void transform_forward(int lg, u32* data) {
 ```
 
 Let's optimize it a bit.
-Instead of loading twiddle factors like this `w[k][bit_rev[k][i]]`, we will precompute `w[k]` in bit-reversed order and load it like this `w[k][i]`.
+Instead of loading twiddle factors like this `w[k][bit_rev[k][i]]`, we will precompute `w[k]` in bit-reversed order and load like this `w[k][i]`.
 We may also notice, that arrays in `w` are now prefixes of each other, so we need only one array.
 
 I substituted variables for shorter code, but workflow is still exactly the same.
