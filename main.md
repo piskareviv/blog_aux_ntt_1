@@ -130,7 +130,7 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 
 <img src="A/plot.svg">
 
-`bit_reverse` -- only bit-reversal (the first loop in the `transform` function)
+`bit reverse` -- only bit-reversal (the first loop in the `transform` function)
 
 
 </details>
@@ -660,7 +660,8 @@ If not for that, there would be almost no performance improvement (compared to `
 ## Step E, optimizing bottom layers
 
 Bottom layers are really slow, 3 bottom layers take as much time as 10 top layers (probably because we didn't vectorize them properly).
-(Back in November 2023) I had been wondering how I could make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by [user:pajenegod].
+(Back in November 2023) I had been wondering how I could make them faster for quite a while, when I found [this](https://codeforces.com/blog/entry/117947) blog by
+[<span style="color: red; font-weight: bold;;">pajenegod</span>](https://codeforces.com/profile/pajenegod).
 It clearly shows what exactly the code we got at step A2 is computing.
 Moreover, it suggests switching to $O(n^2)$ multiplication when we are running out of square roots.
 But there may be another reason for switching to $O(n^2)$ algorithm, it can simply be faster than $O(n \log n)$ algorithm for small values of $n$.
