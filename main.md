@@ -33,6 +33,8 @@ details[open] summary {
 # Making NTT convolution 10x faster with avx2
 
 
+> Thanks [<span style="color: red; font-weight: bold;">alexxela12345</span>](https://codeforces.com/profile/alexxela12345) for reviewing this blog
+
 Hello everyone!
 
 I want to share some of my thoughts and experiments on vectorizing NTT.
@@ -48,7 +50,7 @@ All the benchmarks are performed on my `Ubuntu 22` `Intel i5-1135g7` laptop.
 I execute `cpupower frequency-set -d 3.0ghz -u 3.0ghz` before benchmarks to (attempt to) fix CPU frequency for better accuracy. 
 Code is available at [github](https://github.com/piskareviv/blog_aux_ntt_1).
 You can try running all the benchmarks on your own machine with `run_all.sh` script.
-Vertical dotted lines mark sizes of L1, L2 and L3 caches in `u32`s.
+Vertical dotted lines on plots mark sizes of L1, L2 and L3 caches in `u32`s.
 
 
 ## The task
@@ -238,6 +240,7 @@ I will not mention inverse transform for the next steps, because it will be very
 
 <img src="A2/plot.svg">
 
+`bit reverse` -- only bit-reversal
 
 
 </details>
@@ -306,6 +309,8 @@ If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by t
 
 <img src="A3/plot.svg">
 
+
+`bit reverse` -- only bit-reversal
 
 
 </details>
@@ -465,6 +470,9 @@ compiler will generate unnecessary load instructions for Montgomery constants in
 
 <img src="B/plot.svg">
 
+`bit reverse` -- only bit-reversal
+
+
 Compiler will already vectorize something with `-O3`,
 but manual vectorization will be several times more performant.
 
@@ -608,6 +616,8 @@ The latter is quite important, since amount of twiddle factor recalculation grow
 <img src="C/plot.svg">
 
 
+`bit reverse` -- only bit-reversal
+
 
 </details>
 
@@ -650,7 +660,7 @@ If not for that, there would be almost no performance improvement (compared to `
 
 <img src="D/plot.svg">
 
-
+`bit reverse` -- only bit-reversal
 
 </details>
 
@@ -718,6 +728,9 @@ For some reason the compiler won't generate good enough code for this function w
 <img src="E/plot.svg">
 
 
+`bit reverse` -- only bit-reversal
+
+
 Now top and bottom layers are roughly equal (in terms of time per level), if you draw a line through part from $n=2^7$ to $n=2^{20}$ (before slowdown caused by memory throughput affects performance), it will almost pass through origin.
 
 
@@ -746,7 +759,7 @@ With recursive order only several topmost layers will be affected by memory band
 We can try explicit recursion, it won't introduce much of an overhead, because we only need it for several topmost layers.
 We can try unrolling recursion into a `for` loop by storing stack state in a bitmask.
 But there is another, simpler and more efficient way to make computation (fully) recursive without much of an overhead,
-I first saw it in [this](https://judge.yosupo.jp/submission/201990) submission.
+I first saw the idea in [this](https://judge.yosupo.jp/submission/201990) submission.
 
 We will examine `radix2` case first, generalizing approach to `radix4` will be very simple.
 Let's visualize computational order as a tree, where nodes are recursive calls.
@@ -897,6 +910,7 @@ And [this](https://judge.yosupo.jp/submission/201990) submission (by the same au
 
 ---
 
+Thank you for reading! 
 
 <!-- 
 ### How to use [F](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/F/ntt.hpp)
