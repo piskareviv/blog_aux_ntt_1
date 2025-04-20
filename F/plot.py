@@ -14,8 +14,13 @@ make_plot([
 make_plot([
     ("data_ntt.txt", "F"),
     ("../E/data_ntt.txt", "E"),
+], "plot1", y_ticks=1)
+
+make_plot([
+    ("data_ntt.txt", "F"),
+    ("../E/data_ntt.txt", "E"),
     ("../A/data_bit_reverse.txt", "bit reverse"),
-], "plot1", y_ticks=2)
+], "plot_br", y_ticks=2)
 
 make_plot([
     ("data_ntt.txt", "F"),

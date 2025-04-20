@@ -660,7 +660,17 @@ If not for that, there would be almost no performance improvement (compared to `
 
 <img src="D/plot.svg">
 
+
+<details markdown="1"> 
+<summary> One more </summary>
+
+
+<img src="D/plot_br.svg">
+
+
 `bit reverse` -- only bit-reversal
+
+</details>
 
 </details>
 
@@ -728,11 +738,22 @@ For some reason the compiler won't generate good enough code for this function w
 <img src="E/plot.svg">
 
 
-`bit reverse` -- only bit-reversal
+
 
 
 Now top and bottom layers are roughly equal (in terms of time per level), if you draw a line through part from $n=2^7$ to $n=2^{20}$ (before slowdown caused by memory throughput affects performance), it will almost pass through origin.
 
+
+<details markdown="1"> 
+<summary> One more </summary>
+
+
+<img src="E/plot_br.svg">
+
+
+`bit reverse` -- only bit-reversal
+
+</details>
 
 
 </details>
@@ -803,6 +824,20 @@ it will become clear that after the second vertical line (L2 cache) angle change
 and at `n = 2^29` recursive order is two-three times closer to that line than usual order.
 This is what we should expect, because for recursive order only one third of layers is affected (for sizes greater than $2^{20}$), whilst for usual order all layers are affected.
 
+
+
+<details markdown="1"> 
+<summary> Two more </summary>
+
+
+<img src="F/plot1.svg">
+
+<img src="F/plot_br.svg">
+
+
+`bit reverse` -- only bit-reversal
+
+</details>
 
 
 </details>

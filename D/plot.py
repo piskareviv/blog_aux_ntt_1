@@ -5,8 +5,13 @@ exec(open(path.join("..", "plot.py")).read())
 make_plot([
     ("data_ntt.txt", "D"),
     ("../C/data_ntt.txt", "C"),
-    ("../A/data_bit_reverse.txt", "bit reverse"),
 ], "plot", y_ticks=2)
+
+make_plot([
+    ("data_ntt.txt", "D"),
+    ("../C/data_ntt.txt", "C"),
+    ("../A/data_bit_reverse.txt", "bit reverse"),
+], "plot_br", y_ticks=2)
 
 make_plot([
     ("data_ntt.txt", "D"),
