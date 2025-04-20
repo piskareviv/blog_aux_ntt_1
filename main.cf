@@ -108,7 +108,7 @@ void convolve_cyclic(int lg, u32* a, u32* b) {
 
 
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/A/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/A/plot.svg">
 
 `bit reverse` -- only bit-reversal (the first loop in the `transform` function)
 
@@ -216,7 +216,7 @@ I will not mention inverse transform for the next steps, because it will be very
 
 
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/A2/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/A2/plot.svg">
 
 `bit reverse` -- only bit-reversal
 
@@ -285,7 +285,7 @@ If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by t
 
 
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/A3/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/A3/plot.svg">
 
 
 `bit reverse` -- only bit-reversal
@@ -446,7 +446,7 @@ compiler will generate unnecessary load instructions for Montgomery constants in
 
 
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/B/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/B/plot.svg">
 
 `bit reverse` -- only bit-reversal
 
@@ -591,7 +591,7 @@ The latter is quite important, since amount of twiddle factor recalculation grow
 
 
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/C/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/C/plot.svg">
 
 
 `bit reverse` -- only bit-reversal
@@ -636,14 +636,14 @@ If not for that, there would be almost no performance improvement (compared to `
 
 
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/D/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/D/plot.svg">
 
 
 <spoiler summary=" One more ">  
  
 
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/D/plot_br.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/D/plot_br.svg">
 
 
 `bit reverse` -- only bit-reversal
@@ -713,7 +713,7 @@ For some reason the compiler won't generate good enough code for this function w
 
 
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/E/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/E/plot.svg">
 
 
 
@@ -726,7 +726,7 @@ Now top and bottom layers are roughly equal (in terms of time per level), if you
  
 
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/E/plot_br.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/E/plot_br.svg">
 
 
 `bit reverse` -- only bit-reversal
@@ -767,7 +767,7 @@ During each recursive call exactly one `aux_transform` is performed, and it is p
 Previous order executed `aux_transform` first by depth in the tree, then by order from left to right.
 Now we want to do it in recursive order.
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/./images/call_tree.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/./images/call_tree.svg">
 
 We may notice a pattern: if we ascend from a leaf node using `0` edges only, we will traverse a consecutive segment of recursive calls (these paths are marked with color). 
 So let's iterate over leaf nodes, ascend until we meet a `1` edge, and perform corresponding transforms in nodes of traversed path (they should be performed from top to bottom).
@@ -793,7 +793,7 @@ and the (counterintuitive) fact that it (and higher radix transforms) might be l
 
 
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/F/plot.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/F/plot.svg">
 
 
 Now the plot looks straight, but it actually isn't. 
@@ -808,9 +808,9 @@ This is what we should expect, because for recursive order only one third of lay
  
 
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/F/plot1.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/F/plot1.svg">
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/F/plot_br.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/F/plot_br.svg">
 
 
 `bit reverse` -- only bit-reversal
@@ -852,7 +852,7 @@ it isn't the exact code, but it's pretty similar to the one used in benchmark.
 
 
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/./images/plot_x4_2.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/./images/plot_x4_2.svg">
 
 Suffix `_x4` means that code is run in parallel on four cores.
 Suffix `_hrd` means that code uses that `radix64` transform.
@@ -880,7 +880,7 @@ Some of them may involve permuting array elements or inserting holes to make cac
 
 
 
-<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/fab3bb750120ddc7b5d6559b5b2c8972907f2087/F/ratio.svg">
+<img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/F/ratio.svg">
 
 
 
