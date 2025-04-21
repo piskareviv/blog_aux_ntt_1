@@ -386,7 +386,7 @@ There are four places where we use multiplication:
 I will call map $ \mathbb{F}\_{\text{mod}} \times \mathbb{F}\_{\text{mod}} \to \mathbb{F}\_{\text{mod}} \quad a, b \mapsto ab \cdot 2^{-32} $ *Montgomery multiplication*.
 I will say that variable $x$ is in *Montgomery space*, if the actual value stored is $x \cdot 2^{32}$.
 
-If we multiply usual number and number from *Montgomery space* we will get usual number.
+If we multiply a usual number by a number from *Montgomery space* we get a usual number.
 We multiply by twiddle factors in `butterfly_x2` only, so we will compute twiddle factors in *Montgomery space* 
 and leave array entries usual numbers. `butterfly_x2` effect won't change.
 This solves problem of twiddle factor precomputation as well.
