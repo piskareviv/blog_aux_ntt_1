@@ -763,17 +763,17 @@ I first saw the idea in [this](https://judge.yosupo.jp/submission/201990) submis
 We will examine `radix2` case first, generalizing approach to `radix4` will be very simple.
 Let's visualize computational order as a tree, where nodes are recursive calls.
 
-During each recursive call exactly one `aux_transform` is performed, and it is performed on a half of subarray of the parent node.
-Previous order executed `aux_transform` first by depth in the tree, then by order from left to right.
+During each recursive call exactly one `aux_transform` is performed, and it is performed on a half of the subarray of the parent node.
+Previous order executed `aux_transform` first by depth in the tree, then from left to right.
 Now we want to do it in recursive order.
 
 <img src="https://raw.githubusercontent.com/piskareviv/blog_aux_ntt_1/f24106fac047304d192ccbc1b89b6b324f307770/./images/call_tree.svg">
 
 We may notice a pattern: if we ascend from a leaf node using `0` edges only, we will traverse a consecutive segment of recursive calls (these paths are marked with color). 
-So let's iterate over leaf nodes, ascend until we meet a `1` edge, and perform corresponding transforms in nodes of traversed path (they should be performed from top to bottom).
-Length of the path can be calculated with the help of `tzcnt` instruction -- it is exactly number of trailing zeros in binary representation of leaf index.
+So let's iterate over leaf nodes, ascend until we meet a `1` edge, and perform corresponding transforms in the nodes of traversed path (they should be performed from top to bottom).
+Length of the path can be calculated with the help of `tzcnt` instruction -- it is exactly the number of trailing zeros in binary representation of leaf index.
 Order of `aux_transform` calls is still consecutive on each layer, so twiddle factors will be updated correctly.
-Leftmost path will be a special case, since all `aux_transform` calls on it will have twiddle factors of one. 
+The leftmost path will be a special case, since all `aux_transform` calls on it will have twiddle factors of one. 
 
 Inverse transform can be made fully recursive similarly, but we ascend by `1` edges, instead of `0` edges.
 
