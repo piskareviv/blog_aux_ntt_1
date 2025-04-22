@@ -13,7 +13,7 @@ s = re.sub(r'src="([\s\S]*?)"', r'src="https://raw.githubusercontent.com/piskare
 s = re.sub(r"\[<span[\s\S]*?</span>\]\(https://codeforces.com/profile/([\s\S]*?)\)", r'[user:\g<1>]', s)
 
 
-s = re.sub(r"with avx2\n", r"with avx2\n\n" + "> Text is also available on [github pages](https://piskareviv.github.io/blog_aux_ntt_1/)\n", s)
+s = re.sub(r"with avx2\n", r"with avx2\n\n" + "> Text is also available on [github pages](https://piskareviv.github.io/blog_aux_ntt_1/) (it may look a bit cleaner there)\n", s)
 
 
 open("main.cf", 'w').write(s)
