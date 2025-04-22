@@ -8,7 +8,7 @@
 
 # Making NTT convolution 10x faster with avx2
 
-> Text is also available on [github pages](https://piskareviv.github.io/blog_aux_ntt_1/) (it may look a bit cleaner there)
+> Text is also available on [github pages](https://piskareviv.github.io/blog_aux_ntt_1/) (formatting may look a bit cleaner there)
 
 
 > Thanks [user:alexxela12345] for reviewing this blog
