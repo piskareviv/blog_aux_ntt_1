@@ -37,4 +37,6 @@ int32_t main(int argc, char** argv) {
     std::cout << tm << std::endl;
 
     _mm_free(a), _mm_free(b);
+
+    return 0;
 }

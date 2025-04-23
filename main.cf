@@ -738,7 +738,8 @@ Now top and bottom layers are roughly equal (in terms of time per level), if you
 
 
 Because we no longer need twiddle factors for bottom layers, we can perform convolution on larger arrays. For $\text{mod} = 998\,244\,353 = 2^{23} \cdot 7 \cdot 17 + 1$ the limit was $n = 2^{23}$, but now we can use $n = 2^{26}$.
-And for $\text{mod} = 469762049 = 2^{26} \cdot 7 + 1$ (this one has the largest power of two among all `30-bit` primes) we can use $n = 2^{30}$.
+And for $\text{mod} = 469762049 = 2^{26} \cdot 7 + 1$ (this one has the largest power of two among all `30-bit` primes) we can use $n = 2^{30}$ 
+(though the code as-is would break, because `int` is not enough for indices that large).
 
 But switching to $O(n^2)$ multiplication at bottom layers has downsides. 
 If we need to perform heavy computation with the output of NTT,
@@ -838,9 +839,11 @@ For arrays that fit in L2 cache it makes no difference whether we run convolutio
 But for larger array performance of parallel version degrades quickly. 
 At the rightmost point `n = 2^28`, parallel version is almost two times slower.
 
-I tried using `radix64` on blocks of size `1024` (so one such transform acts on $1024 \cdot 64 = 65536$ elements in total) using three layers of `radix4` (we use `radix64` only when array doesn't fit in L2 cache).
+I tried using `radix64` *butterfly* on blocks of size `1024` (so one such transform acts on $1024 \cdot 64 = 65536$ elements in total) for very large arrays.
+The `radix64` *butterfly* was implemented by performing three `radix4` layers only on those $65536$ elements.
+
 It did help, but I don't actually know why.
-I guess it's mainly because of L3 cache. Unlike L1 and L2 caches, L3 is capable of caching all $65536$ elements (not because of size, but because of the way it works). 
+I guess it's mainly because of L3 cache. Unlike L1 and L2 caches, L3 is capable of caching all $65536$ elements of such `radix64` *butterfly* (not because of its size, but because of the way it works). 
 Even though L3 is much slower than previous levels of cache and is shared between cores, it is still faster than main memory.
 
 Check part from line 891 to line 989 of [this](https://judge.yosupo.jp/submission/176389) submission for implementation details, 
