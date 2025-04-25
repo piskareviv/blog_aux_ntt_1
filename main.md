@@ -210,9 +210,9 @@ void transform_forward(int lg, u32* data) {
 
 
 
-With such an approach output order of the `transform` function will be bit-reversed. It means nothing for pointwise product, but inverse transform has to be adjusted.
+With such an approach, the output order of the `transform` function will be bit-reversed. It means nothing for pointwise product, but inverse transform has to be adjusted.
 It is no longer possible to efficiently express inverse transform using forward. <!-- (it is possible with additional bit-reverse, one instead of three, but this is still bad). -->
-But we always can invert any transform, just by inverting every operation performed in reversed order.
+But we can always invert any transform, just by inverting every operation performed in reverse order.
 
 `butterlfy_x2` is just multiplication by invertible `2x2` matrix:
 
@@ -251,10 +251,10 @@ I will not mention inverse transform for the next steps, because it will be very
 ## Step A3, optimizing initialization to just $O(\log n)$
 
 
-Note that new implementation loads the value of `w[i]` just $n - 1$ times, compared to $\frac{1}{2} n \log_2 n$ times for standard implementation
-(we can swap the two innermost loops and get the same $n - 1$ times, but memory access pattern will become awful).
+Note that the new implementation loads the value of `w[i]` just $n - 1$ times, compared to $\frac{1}{2} n \log_2 n$ times in the standard implementation
+(we could swap the two innermost loops and get the same $n - 1$ times, but memory access pattern would become awful).
 
-It means that computing value of `w[i]` on fly (with one multiplication), instead of loading it from precomputed array, will not result in terrible performance decrease.
+It means that computing the value of `w[i]` on fly (with one multiplication), instead of loading it from precomputed array, will not result in terrible performance decrease.
 So to eliminate the need for an additional array of size $n$, we will use the value of `w[i]`, a precomputed array of size $\log_2 n$ and one multiplication to compute the value of `w[i + 1]`.
 
 <!-- But  -->
@@ -270,12 +270,12 @@ Then `w[i]` is equal to
 
 $$\Large w_i = \prod\limits_{k \in F(i)} w_{2^{k}}$$
 
-It's not hard to see that quotient `w[i + 1] / w[i]` depends only on number of trailing ones in binary representation of `i`.
-We can compute these quotients for every number of trailing ones.
+It's not hard to see that quotient `w[i + 1] / w[i]` depends only on the number of trailing ones in binary representation of `i`.
+We can precompute these quotients for every number of trailing ones.
 Then on every iteration of the middle loop we will:
 
-1. Compute number of trailing ones in `i` (with the help of `tzcnt` instruction)
-2. Multiply previous value of `w` by corresponding array element.
+1. Compute the number of trailing ones in `i` (with the help of `tzcnt` instruction)
+2. Multiply the previous value of `w` by the corresponding array element.
 
 I think that having negligible initialization time and additional memory usage is cool
 enough to justify mild performance decrease.
@@ -284,7 +284,7 @@ enough to justify mild performance decrease.
 
 [code](https://github.com/piskareviv/blog_aux_ntt_1/blob/master/A3/ntt.hpp)
   
-Initialization as is works in $O(\log^2 n)$, but it is still negligible.
+Initialization as-is works in $O(\log^2 n)$, but it is still negligible.
 
 
 
@@ -294,8 +294,8 @@ Initialization as is works in $O(\log^2 n)$, but it is still negligible.
 
 
 
-If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by this line `u32 f = mul(a, b);` (set `f` to `ab` instead of `a / b`),
-`convolve_cyclic` function will still work correctly. I don't really understand why, didn't give it much thought. 
+If we replace this line `u32 f = mul(a, power(b, mod - 2));` in the constructor by this line `u32 f = mul(a, b);` (set `f` to `ab` instead of `a / b`),
+the `convolve_cyclic` function will still work correctly. I don't really understand why, didn't give it much thought. 
 
 
 
@@ -321,7 +321,7 @@ If we replace this line `u32 f = mul(a, power(b, mod - 2));` in constructor by t
 ## Step B, utilizing Montgomery reduction
 
 
-So far we have relied on compiler-generated (for known in compile-time modulo) Barrett reduction.
+So far we have relied on compiler-generated (for known in compile-time modulus) Barrett reduction.
 To vectorize modular arithmetic we need to know how it works, so on this step we will implement manual handling of all modular arithmetic. 
 I will use Montgomery reduction, because vectorized version of it performed better than
 vectorized version of any other reduction algorithm I tried (though there aren't many of them).
@@ -342,15 +342,26 @@ But by doing so we will discard some information about $x$, more precisely its l
 But maybe we can transfer all the information to higher bits (leaving 32 lower bits zeroed)?
 Formally we want to find $y$, such that $y \equiv_{\text{mod}} x$ and $y \equiv_{2^{32}} 0$.
 Chinese remainder theorem says, that there exists unique $y$, such that $0 \le y < 2^{32} \cdot \text{mod}$ (we assume that $\text{mod}$ is odd, since usually $\text{mod}$ is a big prime number).
-One of its proofs gives us explicit formula: $y = x + \left(\left(x \cdot \text{inv}(-\text{mod}, 2^{32})\right)  \%\ 2^{32} \right)\cdot \text{mod}$. 
-We can precompute $\text{inv}(-\text{mod}, 2^{32})$ -- inverse of $-\text{mod}$ in $\mathbb{Z}^{*}_{2^{32}}$ and use only lightweight operations (multiplication, addition, bit-shift) to compute $y$.
+One of its proofs gives us explicit formula: 
+
+$$
+y = x + \left(\left(x \cdot \text{inv}(-\text{mod}, 2^{32})\right)  \%\ 2^{32} \right)\cdot \text{mod}
+$$
+
+We can precompute $\text{inv}(-\text{mod}, 2^{32})$ -- the inverse of $-\text{mod}$ in $\mathbb{Z}^{*}_{2^{32}}$ and use only lightweight operations (multiplication, addition, bit-shift) to compute $y$.
 
 
 
 
 
 Then we can safely shift $y$ 32 bits to the right. Let `r = y >> 32` be the result.
-We know that $y < \text{mod}^2 + 2^{32} \cdot \text{mod} \implies r < \text{mod} + \frac{\text{mod}^2}{2^{32}}$. If $\text{mod}$ is less than $2^{32}$, then $r < 2 \cdot \text{mod}$. That means that we need conditional subtraction to reduce $r$ from $[0, 2 \cdot \text{mod})$ to $[0, \text{mod})$. 
+We know that 
+
+$$
+y < \text{mod}^2 + 2^{32} \cdot \text{mod} \implies r < \text{mod} + \frac{\text{mod}^2}{2^{32}}
+$$
+
+If $\text{mod}$ is less than $2^{32}$, then $r < 2 \cdot \text{mod}$. That means that we need conditional subtraction to reduce $r$ from $[0, 2 \cdot \text{mod})$ to $[0, \text{mod})$. 
 
 ```cpp
 // n_inv = -inv(mod, 2^32) % 2^32
@@ -365,7 +376,8 @@ u32 mul(u32 a, u32 b) const {
 ```
 
 **There is a problem**: $r$ is not congruent to $x$ modulo $\text{mod}$, it is congruent to $x \cdot 2^{-32}$.
-Lets instead of $a, b$ use their representatives in so-called *Montgomery space*: $a \cdot 2^{32}, b \cdot 2^{32}$. Then their *Montgomery product* `reduce(a * b)` will be $a \cdot 2^{32} \cdot b \cdot 2^{32} \cdot 2^{-32} = ab \cdot 2^{32}$ -- representative of $ab$ in *Montgomery space*.
+Lets instead of $a, b$ use their representatives in so-called *Montgomery space*: $a \cdot 2^{32}, b \cdot 2^{32}$. 
+Then their *Montgomery product* `reduce(a * b)` will be $a \cdot 2^{32} \cdot b \cdot 2^{32} \cdot 2^{-32} = ab \cdot 2^{32}$ -- representative of $ab$ in *Montgomery space*.
 This will require us to multiply all values by $2^{32}$ before performing computations and multiply by $2^{-32}$ after.
 
 
@@ -401,12 +413,12 @@ So we will do something about it.
 There are four places where we use multiplication:
 
 1. In `butterfly_x2` function
-2. For scaling result by $\frac{1}{n}$ 
+2. For scaling the result by $\frac{1}{n}$ 
 3. For pointwise multiplication
 4. For precomputing twiddle factors
 
 I will call map $ \mathbb{F}\_{\text{mod}} \times \mathbb{F}\_{\text{mod}} \to \mathbb{F}\_{\text{mod}} \quad a, b \mapsto ab \cdot 2^{-32} $ *Montgomery multiplication*.
-I will say that variable $x$ is in *Montgomery space*, if the actual value stored is $x \cdot 2^{32}$.
+I will say that a variable $x$ is in *Montgomery space*, if the actual value stored is $x \cdot 2^{32}$.
 
 If we multiply a usual number by a number from *Montgomery space* we get a usual number.
 We multiply by twiddle factors in `butterfly_x2` only, so we will compute twiddle factors in *Montgomery space* 
@@ -418,7 +430,7 @@ It can be done in $O(1)$ additional work, just by multiplying scaling constant b
 
 Pointwise multiplication is a bit tricky, but we can cheat a little. 
 If we use *Montgomery multiplication* for pointwise product $a \cdot b$ while keeping $a$ and $b$ usual numbers, the result will be off by a factor of $2^{-32}$.
-But we can cancel that factor during scaling step in $O(1)$ addition work.
+But we can similarly cancel that factor during the scaling step in $O(1)$ addition work.
 Though this approach won't work for non-homogeneous polynomials, like $2a - a^2b$ 
 (this particular one is used in computation of inverse power series).
 
@@ -428,7 +440,7 @@ Though this approach won't work for non-homogeneous polynomials, like $2a - a^2b
 
 Moduli are typically `30-bit` wide, and we can abuse that.
 Instead of always having all numbers in $[0, \text{mod})$, we will allow them to be in $[0, 2 \cdot \text{mod})$ or $[0, 4 \cdot \text{mod})$ and apply `shrink` when necessary (previously we would perform `shrink` immediately after addition/subtraction).
-For `30-bit` moduli Montgomery reduction can reduce from $[0, 4 \cdot \text{mod}^2) \subset [0, 2^{32} \cdot \text{mod}) $ to $[0, 2 \cdot \text{mod})$.
+For `30-bit` moduli, Montgomery reduction can reduce from $[0, 4 \cdot \text{mod}^2) \subset [0, 2^{32} \cdot \text{mod}) $ to $[0, 2 \cdot \text{mod})$.
 This allows us to reduce number of `shrink`s
 (though we should be careful about it, it's very easy to place a bug while counting how many `shrink`s have to be applied)
 
@@ -447,7 +459,7 @@ so multiplying by them is trivial (not required at all). So is half of twiddle f
 quarter on layer after next, ..., and they add up to $1 + \frac{1}{2} + \frac{1}{4} + ... = 2 - \frac{2}{n} \approx 2$ layers.
 
 
-Because the code is getting bloated by various optimizations, I will pack the innermost loop of `transform` function to a template parametrized function `transform_aux` to shorten the code.
+Because the code is getting bloated by various optimizations, I will pack the innermost loop of the `transform` function to a template parametrized function `transform_aux` to shorten the code.
 
 
 
