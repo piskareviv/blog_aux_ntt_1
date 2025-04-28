@@ -358,10 +358,10 @@ Then we can safely shift $y$ 32 bits to the right. Let `r = y >> 32` be the resu
 We know that 
 
 $$
-y < \text{mod}^2 + 2^{32} \cdot \text{mod} \implies r < \text{mod} + \frac{\text{mod}^2}{2^{32}}
+y < \text{mod}^2 + 2^{32} \cdot \text{mod} \implies r \le \text{mod} + \frac{\text{mod}^2}{2^{32}}
 $$
 
-If $\text{mod}$ is less than $2^{32}$, then $r < 2 \cdot \text{mod}$. That means that we need conditional subtraction to reduce $r$ from $[0, 2 \cdot \text{mod})$ to $[0, \text{mod})$. 
+If $\text{mod}$ is less than $2^{32}$, then $r < 2 \cdot \text{mod}$. That means that we need a conditional subtraction to reduce $r$ from $[0, 2 \cdot \text{mod})$ to $[0, \text{mod})$. 
 
 ```cpp
 // n_inv = -inv(mod, 2^32) % 2^32
@@ -790,9 +790,9 @@ so we can perform computation for each part recursively.
 With recursive order only several topmost layers will be affected by memory bandwidth slowdown.
 
 
-We can try explicit recursion, it won't introduce much of an overhead, because we only need it for several topmost layers.
+We can try explicit recursion, it won't introduce much overhead, because we only need it for several topmost layers.
 We can try unrolling recursion into a `for` loop by storing stack state in a bitmask.
-But there is another, simpler and more efficient way to make computation (fully) recursive without much of an overhead,
+But there is another, simpler and more efficient way to make computation (fully) recursive without much overhead,
 I first saw the idea in [this](https://judge.yosupo.jp/submission/201990) submission.
 
 We will examine `radix2` case first, generalizing approach to `radix4` will be very simple.
