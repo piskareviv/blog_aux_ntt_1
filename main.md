@@ -919,11 +919,11 @@ Now our convolution is 9-10 times faster than the original one. There are still 
 
 
 
-We can submit it to [this problem](https://judge.yosupo.jp/problem/convolution_mod) and get very [close](https://judge.yosupo.jp/submission/279317) to top1 submission. (we need to steal a fast I/O template from the top1 submission for a fair comparison)
+We can submit it to [this problem](https://judge.yosupo.jp/problem/convolution_mod) and get very [close](https://judge.yosupo.jp/submission/279317) to the fastest submission. (we need to steal a fast I/O template from the fastest submission for a fair comparison)
 
 Execution time measured by the system includes time for reading input data and printing output data. And even with custom fast I/O, it takes several times more than the convolution itself. So, to measure actual computation time more accurately, one needs to do it by himself and print the result to `stderr` (luckily the judge shows `stderr` on every test). 
 
-Our submission uses `~7.0ms` for actual computation (of cyclic convolution of size $2^{20}$). The author of [top1 submission](https://judge.yosupo.jp/submission/199421) (as of 17 Aug 2024) also printed actual computation time to stderr, his submission uses `~6.5ms`. And [this](https://judge.yosupo.jp/submission/201990) submission (by the same author) uses just `~6.05ms`, though it doesn't have fast I/O and runs in more than `100ms` in total.
+Our submission uses `~7.0ms` for actual computation (of cyclic convolution of size $2^{20}$). The author of [the fastest submission](https://judge.yosupo.jp/submission/199421) (as of 17 Aug 2024) also printed actual computation time to stderr, his submission uses `~6.5ms`. And [this](https://judge.yosupo.jp/submission/201990) submission (by the same author) uses just `~6.05ms`, though it doesn't have fast I/O and runs in more than `100ms` in total.
 
 
 ---
