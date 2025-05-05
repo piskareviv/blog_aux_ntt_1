@@ -2,3 +2,4 @@ manim/
 *.zip
 .vscode/
 __tmp/
+__dev/
